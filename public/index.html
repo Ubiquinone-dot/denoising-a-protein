@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Denoising a Protein — CSE 442 Final</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+<body>
+  <header class="page-header">
+    <h1>Denoising a Protein</h1>
+    <p class="subtitle">
+      How RFdiffusion learns to design proteins by being trained to
+      <em>un</em>-noise them.
+    </p>
+    <p class="intro">
+      Most explainers of protein-design diffusion models show <em>inference</em>:
+      a trained model takes a cloud of noise and turns it into a protein. But
+      that's not how the model is taught. <strong>During training, real
+      protein structures are noised forward, and the model is asked to predict
+      the clean version.</strong>
+    </p>
+    <p class="intro">
+      The recipe for <em>which atoms to noise</em> is what makes the same
+      network capable of unconditional design, motif scaffolding, binder
+      design, and more. There is no "binder head" or "motif head" &mdash; just
+      a mask over the input.
+    </p>
+    <p class="intro">
+      Below sits the engrailed homeodomain (54 amino acids, three α-helices)
+      in its crystal pose. Scroll down to noise it three different ways at once.
+    </p>
+    <p class="scroll-hint">↓ scroll to noise &middot; ↑ to denoise</p>
+  </header>
+
+  <section class="scrolly">
+    <div class="sticky-viz">
+      <div class="hero">
+        <svg class="panel hero-panel" data-panel="hero" aria-label="clean engrailed homeodomain"></svg>
+        <div class="hero-label">engrailed homeodomain &middot; clean structure</div>
+      </div>
+
+      <svg class="fan-arrows" aria-hidden="true"></svg>
+
+      <div class="variant-row">
+        <div class="variant" data-variant="uncond">
+          <h3>unconditional</h3>
+          <svg class="panel" data-panel="uncond"></svg>
+          <p class="caption">
+            Every atom noises. The model learns to denoise from pure noise into
+            <em>any</em> protein.
+          </p>
+        </div>
+        <div class="variant" data-variant="motif">
+          <h3>motif scaffolding</h3>
+          <svg class="panel" data-panel="motif"></svg>
+          <p class="caption">
+            Helix 2 (dark outlines, residues 28–38) stays fixed. The model
+            learns to build a scaffold <em>around</em> a given motif.
+          </p>
+        </div>
+        <div class="variant" data-variant="binder">
+          <h3>binder design</h3>
+          <svg class="panel" data-panel="binder"></svg>
+          <p class="caption">
+            A stylized target chain (gray) stays fixed. The model learns to
+            design a binder against <em>any</em> given target.
+          </p>
+        </div>
+      </div>
+
+      <div class="readout">
+        <span>τ <span class="tau-val">0.00</span></span>
+        <span>σ <span class="sigma-val">0.01</span> Å</span>
+      </div>
+    </div>
+    <div class="scroll-spacer" aria-hidden="true"></div>
+  </section>
+
+  <section class="below-fold">
+    <h2>What you just saw</h2>
+    <p>
+      All three panels share the <em>same</em> EDM noise schedule (Karras et
+      al. 2022), with parameters borrowed from RFD3:
+      σ<sub>data</sub>=16, σ<sub>min</sub>=4×10<sup>−4</sup>,
+      σ<sub>max</sub>=160, ρ=7. The only thing that differs between panels is
+      a binary mask: which atoms are allowed to drift, and which are pinned to
+      their crystal positions.
+    </p>
+    <p>
+      That single insight &mdash; conditioning = masking &mdash; is the engine
+      behind RFdiffusion's flexibility. Train one model on a mixture of all
+      three regimes, and at inference time you can run it in any of them just
+      by choosing the mask.
+    </p>
+    <p class="placeholder">
+      (More content coming: derivation of the EDM schedule, a peek at the
+      training loss, references.)
+    </p>
+  </section>
+
+  <script src="app.js"></script>
+</body>
+</html>

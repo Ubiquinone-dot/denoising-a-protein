@@ -1,0 +1,217 @@
+:root {
+  --teal: #4FB9AF;
+  --navaho: #FFE0AC;
+  --melon: #FFC6B2;
+  --pink: #FFACB7;
+  --amaranth: #D59AB5;
+  --coolgrey: #9596C6;
+  --blue: #6686C5;
+  --darkblue: #4B5FAA;
+  --indigo: #08415C;
+
+  --bg: #fafaf7;
+  --panel-bg: #ffffff;
+  --text: #1a1a1a;
+  --muted: #6b6b6b;
+  --line: #d4d4d4;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, "SF Pro Text", Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---------- Header ---------- */
+
+.page-header {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 96px 24px 56px;
+}
+
+.page-header h1 {
+  font-size: 52px;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  margin: 0 0 16px;
+  color: var(--indigo);
+  text-align: center;
+}
+
+.subtitle {
+  font-size: 19px;
+  color: var(--muted);
+  margin: 0 0 36px;
+  font-style: italic;
+  text-align: center;
+  line-height: 1.45;
+}
+
+.intro {
+  font-size: 16px;
+  line-height: 1.65;
+  margin: 0 0 18px;
+}
+
+.scroll-hint {
+  margin-top: 40px;
+  font-size: 12px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+  text-align: center;
+}
+
+/* ---------- Scrolly section ---------- */
+
+.scrolly { position: relative; }
+
+.sticky-viz {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  gap: 8px;
+  background: var(--bg);
+}
+
+/* Hero panel (clean ubiquitin) */
+
+.hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.hero-panel {
+  width: 320px;
+  height: 220px;
+  background: var(--panel-bg);
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+
+.hero-label {
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* Fan-out arrows */
+
+.fan-arrows {
+  width: 100%;
+  max-width: 920px;
+  height: 72px;
+  display: block;
+}
+
+/* Three variant panels */
+
+.variant-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  width: 100%;
+  max-width: 920px;
+}
+
+.variant {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.variant h3 {
+  margin: 0;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--indigo);
+  font-weight: 600;
+}
+
+.variant .panel {
+  width: 100%;
+  aspect-ratio: 1.4 / 1;
+  background: var(--panel-bg);
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+
+.variant .caption {
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--muted);
+  text-align: center;
+  margin: 0;
+  max-width: 260px;
+}
+
+.variant .caption em {
+  color: var(--text);
+  font-style: normal;
+  font-weight: 600;
+}
+
+/* Readout */
+
+.readout {
+  display: flex;
+  gap: 28px;
+  margin-top: 8px;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.readout .tau-val, .readout .sigma-val {
+  color: var(--text);
+  display: inline-block;
+  min-width: 56px;
+}
+
+/* Scroll spacer (gives the user vertical scroll distance) */
+
+.scroll-spacer {
+  height: 280vh;
+}
+
+/* ---------- Below the fold ---------- */
+
+.below-fold {
+  max-width: 680px;
+  margin: 80px auto 120px;
+  padding: 0 24px;
+}
+
+.below-fold h2 {
+  font-size: 24px;
+  letter-spacing: -0.01em;
+  color: var(--indigo);
+  margin: 0 0 16px;
+}
+
+.below-fold p {
+  font-size: 16px;
+  line-height: 1.65;
+  margin: 0 0 14px;
+}
+
+.below-fold .placeholder {
+  color: var(--muted);
+  font-style: italic;
+}
