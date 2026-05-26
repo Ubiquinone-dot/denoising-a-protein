@@ -100,6 +100,7 @@ html, body {
   background: var(--panel-bg);
   border-radius: 8px;
   box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  overflow: hidden; /* clip NGL canvas to rounded corners */
 }
 
 .hero-label {
@@ -150,6 +151,14 @@ html, body {
   background: var(--panel-bg);
   border-radius: 8px;
   box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  overflow: hidden; /* clip NGL canvas to rounded corners */
+}
+
+/* NGL injects a <canvas> as a direct child; make sure it fills the panel. */
+.ngl-stage > canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
 }
 
 .variant .caption {
