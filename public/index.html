@@ -45,20 +45,20 @@
       <svg class="fan-arrows" aria-hidden="true"></svg>
 
       <div class="variant-row">
-        <div class="variant" data-variant="uncond">
-          <h3>unconditional</h3>
-          <div class="panel ngl-stage" data-panel="uncond"></div>
-          <p class="caption">
-            Every atom noises. The model learns to denoise from pure noise into
-            <em>any</em> protein.
-          </p>
-        </div>
         <div class="variant" data-variant="motif">
           <h3>motif scaffolding</h3>
           <div class="panel ngl-stage" data-panel="motif"></div>
           <p class="caption">
             Helix 2 (residues 28–38, dark blue) stays fixed. The model
             learns to build a scaffold <em>around</em> a given motif.
+          </p>
+        </div>
+        <div class="variant" data-variant="uncond">
+          <h3>unconditional</h3>
+          <div class="panel ngl-stage" data-panel="uncond"></div>
+          <p class="caption">
+            Every atom noises. The model learns to denoise from pure noise into
+            <em>any</em> protein.
           </p>
         </div>
         <div class="variant" data-variant="binder">
@@ -110,20 +110,20 @@
       <svg class="fan-arrows" data-which="flow" aria-hidden="true"></svg>
 
       <div class="variant-row">
-        <div class="variant" data-variant="uncond-flow">
-          <h3>unconditional</h3>
-          <div class="panel ngl-stage" data-panel="uncond-flow"></div>
-          <p class="caption">
-            Every atom morphs along its own straight line from crystal
-            pose to its noise-cloud sample.
-          </p>
-        </div>
         <div class="variant" data-variant="motif-flow">
           <h3>motif scaffolding</h3>
           <div class="panel ngl-stage" data-panel="motif-flow"></div>
           <p class="caption">
             Helix 2 (residues 28–38) is pinned to its crystal position;
             only the surrounding residues morph into the noise cloud.
+          </p>
+        </div>
+        <div class="variant" data-variant="uncond-flow">
+          <h3>unconditional</h3>
+          <div class="panel ngl-stage" data-panel="uncond-flow"></div>
+          <p class="caption">
+            Every atom morphs along its own straight line from crystal
+            pose to its noise-cloud sample.
           </p>
         </div>
         <div class="variant" data-variant="binder-flow">

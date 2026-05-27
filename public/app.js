@@ -73,6 +73,10 @@
     // and rendering those frames also OOMs NGL's bond store. Clamp the
     // scrolled τ to the visually useful range.
     maxFrameFraction: 0.65,
+    // Two-phase progressive disclosure: the first half of the scroll
+    // shows ONLY the unconditional panel noising; the second half reveals
+    // the motif and binder panels and noises all three in sync.
+    phased: true,
     readout: (tau, frameIdx) => {
       document.querySelector(".tau-val").textContent = tau.toFixed(2);
       document.querySelector(".sigma-val").textContent =
@@ -117,6 +121,7 @@
   async function setupSection({
     suffix, scrollySelector, fanArrowsSelector, variants, readout,
     maxFrameFraction = 1.0,
+    phased = false,
   }) {
     const scrollyEl = document.querySelector(scrollySelector);
     if (!scrollyEl) throw new Error(`no element for ${scrollySelector}`);
@@ -132,12 +137,64 @@
 
     const maxFrame = Math.floor((N - 1) * maxFrameFraction);
 
+    // Progressive-disclosure DOM refs (.variant containers for the side
+    // panels, plus the section's fan-arrows SVG). When `phased` is on,
+    // these collapse in phase 1 and reveal in phase 2.
+    const sideContainers = phased ? [
+      scrollyEl.querySelector(`[data-variant="motif${suffix}"]`),
+      scrollyEl.querySelector(`[data-variant="binder${suffix}"]`),
+    ].filter(Boolean) : [];
+    const fanArrowsEl = phased ? scrollyEl.querySelector(".fan-arrows") : null;
+
+    // Initial state: side panels collapsed, dendrogram hidden.
+    if (phased) {
+      sideContainers.forEach(el => el.classList.add("collapsed"));
+      fanArrowsEl?.classList.add("collapsed");
+    }
+
+    // Threshold below which we're in phase 1 (uncond only).
+    const PHASE_THRESHOLD = 0.5;
+
+    function frameAt(t) {
+      return Math.max(0, Math.min(maxFrame, Math.round(t * maxFrame)));
+    }
+
     function update(tau) {
-      const frameIdx = Math.max(0, Math.min(maxFrame, Math.round(tau * maxFrame)));
-      panels.uncond.setFrame(frameIdx);
-      panels.motif.setFrame(frameIdx);
-      panels.binder.setFrame(frameIdx);
-      readout(tau, frameIdx);
+      if (!phased) {
+        const frameIdx = frameAt(tau);
+        panels.uncond.setFrame(frameIdx);
+        panels.motif.setFrame(frameIdx);
+        panels.binder.setFrame(frameIdx);
+        readout(tau, frameIdx);
+        return;
+      }
+
+      // Two-phase: split the scroll range in half.
+      if (tau < PHASE_THRESHOLD) {
+        // Phase 1: uncond noises 0 -> 1 alone. Side panels stay clean
+        // (frame 0) underneath their fade-out so they're ready to appear.
+        const phaseTau = tau / PHASE_THRESHOLD;
+        const frameIdx = frameAt(phaseTau);
+        panels.uncond.setFrame(frameIdx);
+        panels.motif.setFrame(0);
+        panels.binder.setFrame(0);
+        sideContainers.forEach(el => el.classList.add("collapsed"));
+        fanArrowsEl?.classList.add("collapsed");
+        readout(phaseTau, frameIdx);
+      } else {
+        // Phase 2: all three reveal and noise 0 -> 1 in sync. The
+        // uncond panel resets to clean at the phase transition — a small
+        // jump that reads as a deliberate beat ("now let's see all
+        // three together") rather than a glitch.
+        const phaseTau = (tau - PHASE_THRESHOLD) / (1 - PHASE_THRESHOLD);
+        const frameIdx = frameAt(phaseTau);
+        panels.uncond.setFrame(frameIdx);
+        panels.motif.setFrame(frameIdx);
+        panels.binder.setFrame(frameIdx);
+        sideContainers.forEach(el => el.classList.remove("collapsed"));
+        fanArrowsEl?.classList.remove("collapsed");
+        readout(phaseTau, frameIdx);
+      }
     }
 
     function updateFromScroll() {
@@ -289,7 +346,8 @@
     const crossY = h * 0.50;
     const tipY = h - 4;
     const endXs = [w / 6, w / 2, (5 * w) / 6];
-    const colors = ["#4FB9AF", "#D59AB5", "#6686C5"];
+    // Columns are motif / uncond / binder → amaranth / teal / blue
+    const colors = ["#D59AB5", "#4FB9AF", "#6686C5"];
     const trunkColor = "#9b9ba6";
 
     svg.append("path")
