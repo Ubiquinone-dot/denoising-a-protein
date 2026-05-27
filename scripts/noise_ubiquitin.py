@@ -91,6 +91,19 @@ MOTIF_RESIDUES = list(range(28, 39))  # PDB residue numbering, 1-indexed
 PARTNER_SLICE_RESIDUES = list(range(10, 23))  # helix 1
 PARTNER_OFFSET_3D = (-32.0, 4.0, 0.0)  # Å, in PCA-projected 3D coordinates
 
+# --- Flow matching ------------------------------------------------------
+# Conditional flow matching takes a different tack from EDM: sample a noise
+# cloud z ~ N(0, sigma^2 I) ONCE, and define a straight-line path
+#     x_t = (1 - t) * x_clean + t * z,    t in [0, 1]
+# from clean structure (t=0) to noise cloud (t=1).  Variance is constant
+# throughout, no schedule, no exploding tails.
+#
+# We pick the noise std to be comparable to the protein's radius of gyration
+# (~12 A for engrailed homeodomain) so the cloud occupies roughly the same
+# 2D footprint as the clean structure -- visually you see atoms morph in
+# place rather than collapse to a point.
+FLOW_NOISE_SIGMA = 12.0  # Angstrom
+
 RNG_SEED = 0
 
 REPO = Path(__file__).resolve().parent.parent
@@ -239,6 +252,38 @@ def noise_frames(
     return coords3d[None, :, :] + sigmas[:, None, None] * noise
 
 
+def flow_frames(
+    coords3d: np.ndarray,
+    n_frames: int,
+    mask_fixed: np.ndarray | None,
+    rng: np.random.Generator,
+) -> np.ndarray:
+    """Generate (n_frames, n_atoms, 3) flow-matching trajectory.
+
+    Forward rule (conditional flow matching, straight-line path):
+        z ~ N(0, FLOW_NOISE_SIGMA^2 * I)    [sampled ONCE up front]
+        x_t = (1 - t) * x_clean + t * z,    t in linspace(0, 1, n_frames)
+
+    Variance of the endpoint is fixed (no schedule) and the path is a
+    straight line in coordinate space.  Masked atoms are pinned at
+    x_clean by setting their z to x_clean (so (1-t)*x_clean + t*x_clean
+    = x_clean for all t).
+
+    NOTE: we sample z centered at the origin of the coordinate frame.
+    Passing PCA-projected coords here keeps the noise cloud centered on
+    the protein's centroid (= PCA origin).
+    """
+    n_atoms = coords3d.shape[0]
+    z = FLOW_NOISE_SIGMA * rng.standard_normal(size=(n_atoms, 3))
+    if mask_fixed is not None:
+        z[mask_fixed] = coords3d[mask_fixed]
+
+    ts = np.linspace(0.0, 1.0, n_frames)
+    # (n_frames, n_atoms, 3) via broadcasting
+    return (1.0 - ts)[:, None, None] * coords3d[None, :, :] \
+         + ts[:, None, None] * z[None, :, :]
+
+
 # ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
@@ -338,11 +383,28 @@ def main() -> None:
     motif_pc = project(motif_3d, center, basis)
     binder_pc = project(binder_3d, center, basis)
 
+    # ----- flow-matching variants -----------------------------------------
+    # Operate directly in PCA frame so the noise cloud is centered on the
+    # protein's centroid (= PCA origin).  Each variant gets its own RNG
+    # sequence (different from the EDM RNG above) so the noise samples are
+    # independent.
+    flow_rng = np.random.default_rng(RNG_SEED + 1)
+    print("Generating flow-matching variants ...")
+    print("  unconditional ...")
+    flow_uncond_pc = flow_frames(hero_pc, N_FRAMES, mask_fixed=None, rng=flow_rng)
+    print("  motif scaffolding ...")
+    flow_motif_pc = flow_frames(hero_pc, N_FRAMES, mask_fixed=motif_mask, rng=flow_rng)
+    print("  binder design ...")
+    flow_binder_pc = flow_frames(hero_pc, N_FRAMES, mask_fixed=None, rng=flow_rng)
+
     # NaN / Inf sanity check (per project policy: never silently drop).
     for name, arr in [
         ("uncond", uncond_pc),
         ("motif", motif_pc),
         ("binder", binder_pc),
+        ("flow_uncond", flow_uncond_pc),
+        ("flow_motif", flow_motif_pc),
+        ("flow_binder", flow_binder_pc),
     ]:
         if not np.isfinite(arr).all():
             n_bad = (~np.isfinite(arr)).sum()
@@ -380,6 +442,18 @@ def main() -> None:
                 "kept_resnums": kept_resnums,
             },
             "binder": {"frames": round_arr(binder_pc)},
+        },
+        "flow_matching": {
+            "noise_sigma": FLOW_NOISE_SIGMA,
+            "ts": np.linspace(0.0, 1.0, N_FRAMES).round(4).tolist(),
+        },
+        "flow_variants": {
+            "uncond": {"frames": round_arr(flow_uncond_pc)},
+            "motif": {
+                "frames": round_arr(flow_motif_pc),
+                "kept_resnums": kept_resnums,
+            },
+            "binder": {"frames": round_arr(flow_binder_pc)},
         },
     }
 

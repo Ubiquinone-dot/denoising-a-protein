@@ -79,6 +79,71 @@
     <div class="scroll-spacer" aria-hidden="true"></div>
   </section>
 
+  <section class="interlude">
+    <h2>A different kind of noise: flow matching</h2>
+    <p>
+      EDM's σ schedule is unbounded — by the time τ = 1, atoms have
+      drifted thousands of Ångstroms from their crystal positions. That
+      profligate variance is what gives diffusion models their expressive
+      training distribution, but it's also why their inference is a
+      multi-hundred-step climb back down the schedule.
+    </p>
+    <p>
+      <strong>Flow matching</strong> takes a tidier route. Sample a noise
+      cloud once (mean zero, fixed variance σ² = 12² Å²), then define a
+      <em>straight line</em> in coordinate space from the clean structure
+      at t = 0 to the noise cloud at t = 1. No schedule. No exploding
+      tails. The model is trained to predict the constant velocity field
+      that traces that line. The same three masking recipes —
+      unconditional, motif scaffolding, binder design — apply unchanged.
+    </p>
+    <p class="scroll-hint">↓ scroll to morph &middot; ↑ to reverse</p>
+  </section>
+
+  <section class="scrolly scrolly-flow">
+    <div class="sticky-viz">
+      <div class="hero">
+        <div class="panel hero-panel ngl-stage" data-panel="hero-flow" aria-label="clean engrailed homeodomain"></div>
+        <div class="hero-label">engrailed homeodomain &middot; clean structure</div>
+      </div>
+
+      <svg class="fan-arrows" data-which="flow" aria-hidden="true"></svg>
+
+      <div class="variant-row">
+        <div class="variant" data-variant="uncond-flow">
+          <h3>unconditional</h3>
+          <div class="panel ngl-stage" data-panel="uncond-flow"></div>
+          <p class="caption">
+            Every atom morphs along its own straight line from crystal
+            pose to its noise-cloud sample.
+          </p>
+        </div>
+        <div class="variant" data-variant="motif-flow">
+          <h3>motif scaffolding</h3>
+          <div class="panel ngl-stage" data-panel="motif-flow"></div>
+          <p class="caption">
+            Helix 2 (residues 28–38) is pinned to its crystal position;
+            only the surrounding residues morph into the noise cloud.
+          </p>
+        </div>
+        <div class="variant" data-variant="binder-flow">
+          <h3>binder design</h3>
+          <div class="panel ngl-stage" data-panel="binder-flow"></div>
+          <p class="caption">
+            The target chain (gray) is fixed; the binder morphs from
+            crystal pose into the noise cloud.
+          </p>
+        </div>
+      </div>
+
+      <div class="readout">
+        <span>t <span class="t-val-flow">0.00</span></span>
+        <span>noise σ <span class="sigma-flow-val">12.00</span> Å</span>
+      </div>
+    </div>
+    <div class="scroll-spacer" aria-hidden="true"></div>
+  </section>
+
   <section class="below-fold">
     <h2>What you just saw</h2>
     <p>
