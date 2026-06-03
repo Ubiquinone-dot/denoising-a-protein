@@ -16,3 +16,6 @@ Thumbs.db
 
 # Local cache (kagglehub etc. — none here yet, future-proof)
 .cache/
+
+# Large model checkpoints — never commit
+*.ckpt

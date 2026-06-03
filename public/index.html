@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Noising and Denoising Proteins — CSE 512 Final</title>
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="style.css?v=6" />
   <script src="https://d3js.org/d3.v7.min.js"></script>
   <script src="https://unpkg.com/ngl@2.3.1/dist/ngl.js"></script>
 </head>
@@ -144,6 +144,86 @@
     <div class="scroll-spacer" aria-hidden="true"></div>
   </section>
 
+  <section class="latent-atlas-intro">
+    <h2>The shape of the latent space</h2>
+    <p>
+      So far we've watched <em>structures</em> get noised. But RFD3 and BRM
+      don't actually run flow matching directly on coordinates — they run
+      it on a learned <strong>per-residue latent</strong>. A tiny
+      SE(3)-equivariant autoencoder squeezes every residue's heavy-atom
+      sidechain down to an 8-dimensional invariant vector; the diffusion
+      model only ever sees those vectors, and a frozen decoder hangs the
+      atoms back on at sample time.
+    </p>
+    <p>
+      The plot below is the <strong>t-SNE projection</strong> of the
+      encoder's latent <em>means</em> from a held-out validation set,
+      coloured by ground-truth residue type. Each point is one real
+      residue. <strong>Hover any point</strong> and the viewer to the
+      right shows what the decoder reconstructs from that latent.
+    </p>
+    <p class="muted">
+      Every reconstruction is drawn against the <em>same</em> idealised
+      N/CA/C/O backbone frame — because the decoder is equivariant, we
+      can just feed it a single canonical frame and let it place the
+      heavy atoms relative to it. That keeps the camera still while you
+      sweep around the latent space and lets you see the side-chain
+      identity emerge cleanly from one point to the next.
+    </p>
+  </section>
+
+  <section class="latent-atlas">
+    <div class="latent-grid">
+      <div class="latent-tsne-panel">
+        <div class="tsne-header">
+          <h3>latent space &middot; t-SNE</h3>
+          <div class="scheme-switch" role="radiogroup" aria-label="color points by">
+            <button class="scheme-btn active" data-scheme="aa">amino acid</button>
+            <button class="scheme-btn"        data-scheme="hydro">hydrophobicity</button>
+            <button class="scheme-btn"        data-scheme="atoms">heavy atoms</button>
+          </div>
+        </div>
+        <svg class="tsne-svg" aria-label="t-SNE of equivariant AE latents"></svg>
+        <div class="latent-legend" aria-label="residue type legend"></div>
+      </div>
+      <div class="latent-right-stack">
+        <div class="latent-viewer-panel">
+          <h3>decoded residue</h3>
+          <div class="residue-stage ngl-stage" data-panel="residue"></div>
+          <div class="residue-readout">
+            <div class="residue-line">
+              <span class="label">residue</span>
+              <span class="residue-pred-swatch"></span>
+              <span class="residue-pred-name">—</span>
+            </div>
+            <div class="residue-line">
+              <span class="label">heavy atoms</span>
+              <span class="residue-atom-count">—</span>
+            </div>
+          </div>
+          <p class="residue-hint">
+            backbone N/CA/C/O held fixed &middot; only the side chain
+            changes between points
+          </p>
+        </div>
+        <div class="latent-chi-panel">
+          <h3>rotamer space <span class="chi-aa-name"></span></h3>
+          <svg class="chi-svg" aria-label="side-chain dihedral distribution"></svg>
+          <div class="chi-readout">
+            <span class="chi-cell"><span class="chi-key">χ₁</span><span class="chi1-val">—</span></span>
+            <span class="chi-cell"><span class="chi-key">χ₂</span><span class="chi2-val">—</span></span>
+            <span class="chi-cell"><span class="chi-key">χ₃</span><span class="chi3-val">—</span></span>
+            <span class="chi-cell"><span class="chi-key">χ₄</span><span class="chi4-val">—</span></span>
+          </div>
+          <p class="chi-hint">
+            decoded side-chain torsions &middot; grid at ±60° / ±180°
+            marks ideal rotamer wells
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <section class="below-fold">
     <h2>What you just saw</h2>
     <p>
@@ -166,6 +246,6 @@
     </p>
   </section>
 
-  <script src="app.js"></script>
+  <script src="app.js?v=19"></script>
 </body>
 </html>
