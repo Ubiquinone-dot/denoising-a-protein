@@ -3,184 +3,131 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Noising and Denoising Proteins — CSE 512 Final</title>
-  <link rel="stylesheet" href="style.css?v=6" />
+  <title>Learning how to make proteins — CSE 512 Final</title>
+  <link rel="stylesheet" href="style.css?v=25" />
   <script src="https://d3js.org/d3.v7.min.js"></script>
   <script src="https://unpkg.com/ngl@2.3.1/dist/ngl.js"></script>
 </head>
 <body>
   <header class="page-header">
-    <h1>Noising and Denoising Proteins</h1>
-    <p class="subtitle">
-      How RFdiffusion learns to design proteins by being trained to
-      <em>un</em>-noise them.
-    </p>
-    <p class="intro">
-      Most explainers of protein-design diffusion models show <em>inference</em>:
-      a trained model takes a cloud of noise and turns it into a protein. But
-      that's not how the model is taught. <strong>During training, real
-      protein structures are noised forward, and the model is asked to predict
-      the clean version.</strong>
-    </p>
-    <p class="intro">
-      The recipe for <em>which atoms to noise</em> is what makes the same
-      network capable of unconditional design, motif scaffolding, binder
-      design, and more. There is no "binder head" or "motif head" &mdash; just
-      a mask over the input.
-    </p>
-    <p class="intro">
-      Below sits the engrailed homeodomain (54 amino acids, three α-helices)
-      in its crystal pose. Scroll down to noise it three different ways at once.
-    </p>
-    <p class="scroll-hint">↓ scroll to noise &middot; ↑ to denoise</p>
+    <h1>Learning how to make proteins</h1>
+    <p class="byline">An interactive visualization project by Jasper Butcher</p>
+    <p class="scroll-hint">↓ scroll to noise</p>
   </header>
 
   <section class="scrolly">
     <div class="sticky-viz">
-      <div class="hero">
-        <div class="panel hero-panel ngl-stage" data-panel="hero" aria-label="clean engrailed homeodomain"></div>
-        <div class="hero-label">engrailed homeodomain &middot; clean structure</div>
-      </div>
-
-      <svg class="fan-arrows" aria-hidden="true"></svg>
-
-      <div class="variant-row">
-        <div class="variant" data-variant="motif">
-          <h3>motif scaffolding</h3>
-          <div class="panel ngl-stage" data-panel="motif"></div>
-          <p class="caption">
-            Helix 2 (residues 28–38, dark blue) stays fixed. The model
-            learns to build a scaffold <em>around</em> a given motif.
-          </p>
+      <div class="viz-toolbar">
+        <div class="hero-switch" role="radiogroup" aria-label="hero protein">
+          <button class="hero-btn active" data-hero="1qys">1QYS</button>
+          <button class="hero-btn"        data-hero="1enh">1ENH</button>
+          <button class="hero-btn"        data-hero="1ubq">1UBQ</button>
         </div>
-        <div class="variant" data-variant="uncond">
-          <h3>unconditional</h3>
-          <div class="panel ngl-stage" data-panel="uncond"></div>
-          <p class="caption">
-            Every atom noises. The model learns to denoise from pure noise into
-            <em>any</em> protein.
-          </p>
-        </div>
-        <div class="variant" data-variant="binder">
-          <h3>binder design</h3>
-          <div class="panel ngl-stage" data-panel="binder"></div>
-          <p class="caption">
-            A stylized target chain (gray) stays fixed. The model learns to
-            design a binder against <em>any</em> given target.
-          </p>
+        <div class="mode-switch" role="radiogroup" aria-label="noise schedule">
+          <button class="mode-btn active" data-mode="edm">Diffusion</button>
+          <button class="mode-btn"        data-mode="flow">Flow matching</button>
         </div>
       </div>
-
-      <div class="readout">
-        <span>τ <span class="tau-val">0.00</span></span>
-        <span>σ <span class="sigma-val">0.01</span> Å</span>
+      <div class="flow-three-col">
+        <aside class="mode-explainer">
+          <div class="mode-explainer-title">how it's trained</div>
+          <p class="mode-explainer-body">
+            <!-- text swapped on mode change -->
+          </p>
+        </aside>
+        <div class="panel hero-panel ngl-stage" data-panel="noise-hero" aria-label="forward-noising of hero protein"></div>
+        <div class="schedule-card">
+          <div class="schedule-title">noise σ vs τ</div>
+          <svg class="schedule-svg" aria-label="noise σ as a function of τ"></svg>
+          <div class="readout">
+            <span>τ <span class="t-val">0.00</span></span>
+            <span>σ <span class="sigma-val">0.00</span> Å</span>
+          </div>
+        </div>
       </div>
+      <div class="hero-label"><span class="hero-label-name">1QYS</span> &middot; <span class="mode-label">Diffusion</span>, τ ∈ [0, 1]</div>
     </div>
     <div class="scroll-spacer" aria-hidden="true"></div>
   </section>
 
-  <section class="interlude">
-    <h2>A different kind of noise: flow matching</h2>
-    <p>
-      EDM's σ schedule is unbounded — by the time τ = 1, atoms have
-      drifted thousands of Ångstroms from their crystal positions. That
-      profligate variance is what gives diffusion models their expressive
-      training distribution, but it's also why their inference is a
-      multi-hundred-step climb back down the schedule.
+  <section class="ae-section">
+    <h2>Encoding all-atom structures with an autoencoder for sidechains</h2>
+    <p class="ae-tagline">
+      The diffusion model doesn't see atoms. It sees an 8-D latent
+      <strong>Z</strong> per residue. The backbone stays explicit; only
+      the side chain is encoded.
     </p>
-    <p>
-      <strong>Flow matching</strong> takes a tidier route. Sample a noise
-      cloud once (mean zero, fixed variance σ² = 12² Å²), then define a
-      <em>straight line</em> in coordinate space from the clean structure
-      at t = 0 to the noise cloud at t = 1. No schedule. No exploding
-      tails. The model is trained to predict the constant velocity field
-      that traces that line. The same three masking recipes —
-      unconditional, motif scaffolding, binder design — apply unchanged.
-    </p>
-    <p class="scroll-hint">↓ scroll to morph &middot; ↑ to reverse</p>
-  </section>
-
-  <section class="scrolly scrolly-flow">
-    <div class="sticky-viz">
-      <div class="hero">
-        <div class="panel hero-panel ngl-stage" data-panel="hero-flow" aria-label="clean engrailed homeodomain"></div>
-        <div class="hero-label">engrailed homeodomain &middot; clean structure</div>
-      </div>
-
-      <svg class="fan-arrows" data-which="flow" aria-hidden="true"></svg>
-
-      <div class="variant-row">
-        <div class="variant" data-variant="motif-flow">
-          <h3>motif scaffolding</h3>
-          <div class="panel ngl-stage" data-panel="motif-flow"></div>
-          <p class="caption">
-            Helix 2 (residues 28–38) is pinned to its crystal position;
-            only the surrounding residues morph into the noise cloud.
-          </p>
+    <div class="ae-diagram">
+      <div class="ae-row">
+        <div class="ae-step">
+          <div class="ae-panel ngl-stage" data-panel="ae-allatom" aria-label="all-atom input"></div>
+          <div class="ae-label">all-atom input</div>
         </div>
-        <div class="variant" data-variant="uncond-flow">
-          <h3>unconditional</h3>
-          <div class="panel ngl-stage" data-panel="uncond-flow"></div>
-          <p class="caption">
-            Every atom morphs along its own straight line from crystal
-            pose to its noise-cloud sample.
-          </p>
+        <div class="ae-arrow ae-arrow-enc">
+          <svg viewBox="0 0 80 40" preserveAspectRatio="none" aria-hidden="true">
+            <path d="M 4 20 L 70 20" />
+            <path d="M 60 12 L 72 20 L 60 28" />
+          </svg>
+          <span>encoder</span>
         </div>
-        <div class="variant" data-variant="binder-flow">
-          <h3>binder design</h3>
-          <div class="panel ngl-stage" data-panel="binder-flow"></div>
-          <p class="caption">
-            The target chain (gray) is fixed; the binder morphs from
-            crystal pose into the noise cloud.
-          </p>
+        <div class="ae-bottleneck-group" aria-label="encoder outputs: backbone frame and latent Z">
+          <div class="ae-step ae-bottleneck-card ae-bb-card" tabindex="0" aria-label="backbone (click to pin viewer)">
+            <div class="ae-panel ae-panel-small ngl-stage" data-panel="ae-backbone" aria-label="backbone-only view"></div>
+            <div class="ae-label backbone-highlight">BACKBONE</div>
+          </div>
+          <div class="ae-bottleneck-plus" aria-hidden="true">+</div>
+          <div class="ae-step ae-bottleneck-card ae-z-card" tabindex="0" aria-label="latent Z (click to pin viewer)">
+            <div class="ae-z-vector" aria-label="latent vector Z">
+              <span class="ae-z-letter">z</span>
+              <span class="ae-z-cells">
+                <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+              </span>
+            </div>
+            <div class="ae-label z-highlight">LATENT Z</div>
+          </div>
+        </div>
+        <div class="ae-arrow ae-arrow-dec">
+          <svg viewBox="0 0 80 40" preserveAspectRatio="none" aria-hidden="true">
+            <path d="M 4 20 L 70 20" />
+            <path d="M 60 12 L 72 20 L 60 28" />
+          </svg>
+          <span>decoder</span>
+        </div>
+        <div class="ae-step">
+          <div class="ae-panel ngl-stage" data-panel="ae-decoded" aria-label="all-atom reconstruction"></div>
+          <div class="ae-label">all-atom output</div>
         </div>
       </div>
-
-      <div class="readout">
-        <span>t <span class="t-val-flow">0.00</span></span>
-        <span>noise σ <span class="sigma-flow-val">12.00</span> Å</span>
+      <div class="latent-z-viewer" aria-hidden="true" role="region" aria-label="latent z viewer">
+        <button class="latent-z-viewer-close" type="button" aria-label="unpin latent z viewer">&times;</button>
+        <div class="latent-z-viewer-pinbadge" aria-hidden="true">PINNED</div>
+        <svg class="latent-z-viewer-svg" aria-label="bar chart of the 8 z dimensions for a representative residue"></svg>
+        <p class="latent-z-viewer-caption">
+          z &isin; &#8477;<sup>8</sup> per residue. All the diffusion model sees of the side chain &mdash; no atoms, just 8 numbers per position.
+        </p>
+      </div>
+      <div class="backbone-viewer" aria-hidden="true" role="region" aria-label="backbone viewer">
+        <button class="backbone-viewer-close" type="button" aria-label="unpin backbone viewer">&times;</button>
+        <div class="backbone-viewer-pinbadge" aria-hidden="true">PINNED</div>
+        <svg class="backbone-viewer-svg" aria-label="sketch of one N-CA-C-O backbone unit with phi and psi torsions"></svg>
+        <p class="backbone-viewer-caption">
+          One residue's backbone &mdash; four heavy atoms (N, C&alpha;, C, O) plus two torsions &phi;/&psi;. Held fixed through the autoencoder; the network only ever rewrites the side chain.
+        </p>
       </div>
     </div>
-    <div class="scroll-spacer" aria-hidden="true"></div>
-  </section>
-
-  <section class="latent-atlas-intro">
-    <h2>The shape of the latent space</h2>
-    <p>
-      So far we've watched <em>structures</em> get noised. But RFD3 and BRM
-      don't actually run flow matching directly on coordinates — they run
-      it on a learned <strong>per-residue latent</strong>. A tiny
-      SE(3)-equivariant autoencoder squeezes every residue's heavy-atom
-      sidechain down to an 8-dimensional invariant vector; the diffusion
-      model only ever sees those vectors, and a frozen decoder hangs the
-      atoms back on at sample time.
-    </p>
-    <p>
-      The plot below is the <strong>t-SNE projection</strong> of the
-      encoder's latent <em>means</em> from a held-out validation set,
-      coloured by ground-truth residue type. Each point is one real
-      residue. <strong>Hover any point</strong> and the viewer to the
-      right shows what the decoder reconstructs from that latent.
-    </p>
-    <p class="muted">
-      Every reconstruction is drawn against the <em>same</em> idealised
-      N/CA/C/O backbone frame — because the decoder is equivariant, we
-      can just feed it a single canonical frame and let it place the
-      heavy atoms relative to it. That keeps the camera still while you
-      sweep around the latent space and lets you see the side-chain
-      identity emerge cleanly from one point to the next.
-    </p>
   </section>
 
   <section class="latent-atlas">
     <div class="latent-grid">
       <div class="latent-tsne-panel">
         <div class="tsne-header">
-          <h3>latent space &middot; t-SNE</h3>
+          <h3><span class="z-highlight">LATENT Z</span> &middot; T-SNE</h3>
           <div class="scheme-switch" role="radiogroup" aria-label="color points by">
             <button class="scheme-btn active" data-scheme="aa">amino acid</button>
             <button class="scheme-btn"        data-scheme="hydro">hydrophobicity</button>
             <button class="scheme-btn"        data-scheme="atoms">heavy atoms</button>
+            <button class="scheme-btn"        data-scheme="energy">energy ‖z‖</button>
+            <button class="scheme-btn"        data-scheme="rotamer">rotamer strain</button>
           </div>
         </div>
         <svg class="tsne-svg" aria-label="t-SNE of equivariant AE latents"></svg>
@@ -225,27 +172,13 @@
   </section>
 
   <section class="below-fold">
-    <h2>What you just saw</h2>
-    <p>
-      All three panels share the <em>same</em> EDM noise schedule (Karras et
-      al. 2022), with parameters borrowed from RFD3:
-      σ<sub>data</sub>=16, σ<sub>min</sub>=4×10<sup>−4</sup>,
-      σ<sub>max</sub>=160, ρ=7. The only thing that differs between panels is
-      a binary mask: which atoms are allowed to drift, and which are pinned to
-      their crystal positions.
-    </p>
-    <p>
-      That single insight &mdash; conditioning = masking &mdash; is the engine
-      behind RFdiffusion's flexibility. Train one model on a mixture of all
-      three regimes, and at inference time you can run it in any of them just
-      by choosing the mask.
-    </p>
-    <p class="placeholder">
-      (More content coming: derivation of the EDM schedule, a peek at the
-      training loss, references.)
+    <p class="footer-note">
+      1ENH (engrailed homeodomain, 54 aa) &middot; flow matching with
+      σ<sub>noise</sub> = 12 Å &middot; equivariant autoencoder, latent
+      dim 8.
     </p>
   </section>
 
-  <script src="app.js?v=19"></script>
+  <script src="app.js?v=44"></script>
 </body>
 </html>

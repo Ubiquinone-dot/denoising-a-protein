@@ -9,11 +9,49 @@
   --darkblue: #4B5FAA;
   --indigo: #08415C;
 
+  --paper-mustard:    #E8C58A;
+  --paper-olive:      #C8C383;
+  --paper-sage:       #A9C99E;
+  --paper-seafoam:    #82CDB9;
+  --paper-skyblue:    #87A8D0;
+  --paper-periwinkle: #7C8BC8;
+  --paper-steel:      #5C7592;
+  --paper-lavender:   #B5A8D0;
+  --paper-plum:       #A07895;
+  --paper-dustyrose:  #C88497;
+  --paper-terracotta: #D49580;
+
+  /* Highlight colour for "LATENT Z" — used on the bottleneck label, the
+     italic z letter, the tensor cells, and the t-SNE panel title. Single
+     accent so the two sections read as one concept by colour. Paper teal
+     so it lines up with the all-atom sidechain colour next to it. */
+  --z-accent: #4FB9AF;
+  --z-accent-soft: rgba(79, 185, 175, 0.30);
+
   --bg: #fafaf7;
   --panel-bg: #ffffff;
   --text: #1a1a1a;
   --muted: #6b6b6b;
   --line: #d4d4d4;
+}
+
+/* Inline highlight used wherever "latent z" appears in copy or headings.
+   !important wins against the existing `.latent-tsne-panel h3` ruleset
+   which would otherwise override our colour via specificity. */
+.z-highlight {
+  color: var(--z-accent) !important;
+  font-weight: 700;
+}
+
+/* Companion highlight for the BACKBONE label. paper_indigo is the
+   structural-feeling cool pair to paper_teal — the two encoder
+   outputs (backbone + latent z) now read as a teal/indigo duo across
+   the page wherever those words appear. The rendered backbone cartoon
+   in the AE NGL panels uses the same hex (see app.js compAll/compBb/
+   compDec representations) so text colour and ribbon colour agree. */
+.backbone-highlight {
+  color: var(--indigo) !important;
+  font-weight: 700;
 }
 
 * { box-sizing: border-box; }
@@ -30,18 +68,27 @@ html, body {
 /* ---------- Header ---------- */
 
 .page-header {
-  max-width: 680px;
+  max-width: 760px;
   margin: 0 auto;
   padding: 96px 24px 56px;
 }
 
 .page-header h1 {
-  font-size: 52px;
+  font-size: 44px;
   letter-spacing: -0.03em;
   line-height: 1.05;
-  margin: 0 0 16px;
+  margin: 0 0 10px;
   color: var(--indigo);
   text-align: center;
+  white-space: nowrap;
+}
+
+.byline {
+  font-size: 15px;
+  color: var(--muted);
+  font-style: italic;
+  text-align: center;
+  margin: 0 0 28px;
 }
 
 .subtitle {
@@ -95,12 +142,199 @@ html, body {
 }
 
 .hero-panel {
-  width: 320px;
-  height: 220px;
+  width: min(380px, 32vw);
+  height: 100%;            /* fill the flow-three-col row exactly */
   background: var(--panel-bg);
   border-radius: 8px;
   box-shadow: 0 1px 3px rgba(0,0,0,0.06);
   overflow: hidden; /* clip NGL canvas to rounded corners */
+}
+
+/* Toolbar above the three-column row: hero-protein toggle on the left,
+   noise-schedule toggle on the right. Lives OUTSIDE flow-three-col so the
+   three boxes below can be true equal-height siblings (the hero column
+   no longer carries any extra height from buttons). */
+.viz-toolbar {
+  display: flex;
+  flex-direction: row;
+  gap: 16px;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 10px;
+}
+
+/* Three-column sticky layout: [explainer] [protein] [schedule plot].
+   align-items: stretch + a fixed row height so all three children have
+   *exactly* the same top and bottom edges. Each child also sets its own
+   height as a safety net for older flex implementations. */
+.flow-three-col {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  align-items: stretch;
+  justify-content: center;
+  flex-wrap: wrap;
+  height: min(420px, 56vh);
+}
+
+/* Explainer card on the left — switches text when the mode toggle flips. */
+.mode-explainer {
+  width: min(280px, 30vw);
+  height: 100%;            /* fill the flow-three-col row exactly */
+  background: var(--panel-bg);
+  border-radius: 10px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  justify-content: center;
+}
+
+.mode-explainer-title {
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.mode-explainer-body {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--text);
+}
+
+@media (max-width: 980px) {
+  .mode-explainer { width: min(440px, 86vw); height: auto; min-height: 200px; }
+}
+
+/* Hero protein toggle (1QYS | 1ENH | 1UBQ). Same styling as the mode
+   switch below; positioned above so the layout reads top-down:
+   hero-switch → mode-switch → panel → label. */
+.hero-switch {
+  display: inline-flex;
+  border: 1px solid rgba(8, 65, 92, 0.18);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.hero-btn {
+  appearance: none;
+  border: none;
+  background: transparent;
+  padding: 6px 14px;
+  font: 500 11px/1 -apple-system, "SF Pro Text", Helvetica, Arial, sans-serif;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  cursor: pointer;
+  border-right: 1px solid rgba(8, 65, 92, 0.12);
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.hero-btn:last-child { border-right: none; }
+.hero-btn:hover { color: var(--indigo); background: rgba(8, 65, 92, 0.04); }
+.hero-btn.active { background: var(--indigo); color: #fff; }
+
+/* Mode toggle (EDM | Flow matching). Mirrors the t-SNE scheme switch. */
+.mode-switch {
+  display: inline-flex;
+  border: 1px solid rgba(8, 65, 92, 0.18);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.mode-btn {
+  appearance: none;
+  border: none;
+  background: transparent;
+  padding: 6px 14px;
+  font: 500 11px/1 -apple-system, "SF Pro Text", Helvetica, Arial, sans-serif;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  cursor: pointer;
+  border-right: 1px solid rgba(8, 65, 92, 0.12);
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.mode-btn:last-child { border-right: none; }
+.mode-btn:hover { color: var(--indigo); background: rgba(8, 65, 92, 0.04); }
+.mode-btn.active { background: var(--indigo); color: #fff; }
+
+.mode-label { color: var(--indigo); font-weight: 600; }
+
+.schedule-card {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
+  gap: 8px;
+  width: min(320px, 28vw);
+  height: 100%;            /* fill the flow-three-col row exactly */
+  background: var(--panel-bg);
+  border-radius: 10px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  padding: 14px 14px 12px;
+}
+
+.schedule-title {
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+  text-align: center;
+}
+
+.schedule-svg {
+  width: 100%;
+  flex: 1 1 auto;
+  min-height: 0;
+  display: block;
+}
+
+.schedule-svg .grid line {
+  stroke: rgba(8, 65, 92, 0.08);
+  stroke-width: 1;
+}
+.schedule-svg .axis line {
+  stroke: rgba(0,0,0,0.45);
+  stroke-width: 1;
+}
+.schedule-svg .axis line.tickmark {
+  stroke: rgba(0,0,0,0.35);
+}
+.schedule-svg .axis .tick {
+  font: 10.5px ui-monospace, "SF Mono", Menlo, monospace;
+  fill: var(--muted);
+}
+.schedule-svg .axis .axis-label {
+  font: 11.5px ui-monospace, "SF Mono", Menlo, monospace;
+  fill: var(--text);
+  letter-spacing: 0.04em;
+}
+.schedule-svg .sched-line {
+  stroke: var(--teal);
+  stroke-width: 2.4;
+  fill: none;
+  stroke-linecap: round;
+}
+.schedule-svg .sched-proj {
+  stroke: rgba(8, 65, 92, 0.35);
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
+}
+.schedule-svg .sched-dot-c {
+  fill: var(--indigo);
+  stroke: #fff;
+  stroke-width: 1.5;
+}
+
+@media (max-width: 760px) {
+  .flow-two-col { flex-direction: column; }
+  .schedule-card { width: min(440px, 86vw); }
+  .hero-panel { width: min(440px, 86vw); height: min(360px, 42vh); }
 }
 
 .hero-label {
@@ -108,6 +342,8 @@ html, body {
   letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--muted);
+  margin-top: 10px;        /* breathing room under the flow-three-col row */
+  text-align: center;
 }
 
 /* Fan-out arrows */
@@ -332,6 +568,14 @@ html, body {
 }
 
 .tsne-header h3 { margin: 0; }
+
+/* Make the "LATENT Z · T-SNE" title pop a little — the "LATENT Z"
+   half carries the shared accent colour that ties the bottleneck and
+   the latent atlas together, while the "T-SNE" half stays neutral. */
+.tsne-header h3 {
+  font-size: 18px;
+  letter-spacing: 0.20em;
+}
 
 .scheme-switch {
   display: inline-flex;
@@ -610,4 +854,484 @@ html, body {
 .below-fold .placeholder {
   color: var(--muted);
   font-style: italic;
+}
+
+.below-fold .footer-note {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 12px;
+  color: var(--muted);
+  text-align: center;
+  margin: 0;
+}
+
+/* ---------- Autoencoder section (all-atom → Z → backbone) ---------- */
+
+.ae-section {
+  max-width: 1100px;
+  margin: 88px auto 56px;
+  padding: 0 24px;
+  position: relative;
+}
+
+.ae-section h2 {
+  font-size: 28px;
+  letter-spacing: -0.01em;
+  color: var(--indigo);
+  margin: 0 0 10px;
+  text-align: center;
+}
+
+.ae-tagline {
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--text);
+  text-align: center;
+  max-width: 540px;
+  margin: 0 auto 32px;
+}
+
+.ae-diagram {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+.ae-row {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+
+.ae-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.ae-panel {
+  width: 260px;
+  height: 220px;
+  background: var(--panel-bg);
+  border-radius: 10px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  overflow: hidden;
+}
+
+.ae-panel-small {
+  width: 180px;
+  height: 140px;
+}
+
+.ae-label {
+  font-size: 10.5px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.ae-arrow {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  color: var(--muted);
+  min-width: 72px;
+}
+
+.ae-arrow svg {
+  width: 72px;
+  height: 26px;
+}
+
+.ae-arrow svg path {
+  stroke: var(--coolgrey);
+  stroke-width: 1.6;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.ae-arrow span {
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+/* Bottleneck group: the encoder emits TWO things — a fixed backbone
+   frame AND an 8-D latent z per residue. Render them as two adjacent
+   white cards stacked vertically inside a shared column, with a small
+   "+" between to convey co-emission. Each card has its own chrome so
+   they read as distinct objects. */
+
+.ae-bottleneck-group {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
+  gap: 6px;
+  min-width: 200px;
+}
+
+.ae-bottleneck-card {
+  background: var(--panel-bg);
+  border-radius: 10px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  padding: 10px 14px 10px;
+  gap: 6px;
+  /* Same column width for both cards so they read as a pair. */
+  width: 100%;
+}
+
+.ae-bottleneck-card .ae-panel-small {
+  width: 100%;
+  height: 100px;
+  background: var(--bg);
+  box-shadow: none;
+}
+
+.ae-bottleneck-plus {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 18px;
+  line-height: 1;
+  color: var(--muted);
+  text-align: center;
+  user-select: none;
+  letter-spacing: 0;
+}
+
+/* The Z card is the interactive hot-spot for the latent viewer below.
+   Subtle border that intensifies on hover so it reads as a clickable
+   tile, not just a decorative box. */
+.ae-z-card {
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: border-color 0.15s ease, transform 0.15s ease,
+              box-shadow 0.15s ease;
+}
+
+.ae-z-card:hover {
+  border-color: var(--z-accent-soft);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(79, 185, 175, 0.18);
+}
+
+.ae-z-card:focus-visible {
+  outline: 2px solid var(--z-accent);
+  outline-offset: 2px;
+}
+
+.ae-z-card.pinned {
+  border-color: var(--z-accent);
+  box-shadow: 0 2px 10px rgba(79, 185, 175, 0.28);
+}
+
+.ae-z-card .ae-z-vector {
+  margin: 6px 0 2px;
+}
+
+/* The latent vector: small italic "z" label + a row of 8 cells styled
+   as a 1-D tensor. Conveys "Z is an 8-D vector" without any caption. */
+.ae-z-vector {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ae-z-letter {
+  font-family: "Times New Roman", "Cambria", Georgia, serif;
+  font-style: italic;
+  font-weight: 700;
+  font-size: 28px;
+  line-height: 1;
+  color: var(--z-accent);
+  letter-spacing: -0.02em;
+}
+
+.ae-z-cells {
+  display: inline-grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 2px;
+  padding: 3px;
+  background: rgba(255,255,255,0.7);
+  border: 1px solid var(--z-accent-soft);
+  border-radius: 4px;
+}
+
+.ae-z-cells i {
+  display: block;
+  width: 12px;
+  height: 16px;
+  background: var(--z-accent);
+  border-radius: 1px;
+  opacity: 0.55;
+}
+/* Vary opacity across the 8 cells so it reads as a vector of numbers,
+   not a uniform pattern. */
+.ae-z-cells i:nth-child(1) { opacity: 0.40; }
+.ae-z-cells i:nth-child(2) { opacity: 0.75; }
+.ae-z-cells i:nth-child(3) { opacity: 0.30; }
+.ae-z-cells i:nth-child(4) { opacity: 0.85; }
+.ae-z-cells i:nth-child(5) { opacity: 0.55; }
+.ae-z-cells i:nth-child(6) { opacity: 0.40; }
+.ae-z-cells i:nth-child(7) { opacity: 0.70; }
+.ae-z-cells i:nth-child(8) { opacity: 0.50; }
+
+/* ---------- Latent-Z viewer (hover + click-to-pin) ----------
+   Positioned absolutely under the AE row so toggling never pushes
+   downstream sections. Hidden by default (opacity 0 + pointer-events
+   none) so it reserves no space and isn't reachable when collapsed. */
+
+.latent-z-viewer {
+  position: absolute;
+  left: 50%;
+  /* Sit below the .ae-row (which is the only flex child above this in
+     .ae-diagram). transform centres horizontally; top offset puts it
+     under the row with a generous gap so it reads as a popout rather
+     than a continuation of the diagram. */
+  top: calc(100% + 36px);
+  transform: translateX(-50%);
+  width: min(420px, 90vw);
+  background: var(--panel-bg);
+  border-radius: 10px;
+  box-shadow: 0 4px 18px rgba(0,0,0,0.10);
+  padding: 14px 16px 12px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease, box-shadow 0.15s ease,
+              border-color 0.15s ease;
+  border: 1px solid transparent;
+  z-index: 5;
+}
+
+.latent-z-viewer.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.latent-z-viewer.pinned {
+  border-color: var(--z-accent);
+  box-shadow: 0 4px 22px rgba(79, 185, 175, 0.25);
+}
+
+.latent-z-viewer-close {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  appearance: none;
+  border: none;
+  background: transparent;
+  font-size: 18px;
+  line-height: 1;
+  color: var(--muted);
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+  display: none;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+
+.latent-z-viewer-close:hover {
+  background: rgba(0,0,0,0.05);
+  color: var(--text);
+}
+
+.latent-z-viewer.pinned .latent-z-viewer-close { display: block; }
+
+.latent-z-viewer-pinbadge {
+  position: absolute;
+  top: 8px;
+  left: 10px;
+  font: 600 9px/1 ui-monospace, "SF Mono", Menlo, monospace;
+  letter-spacing: 0.16em;
+  color: var(--z-accent);
+  padding: 2px 6px;
+  border: 1px solid var(--z-accent-soft);
+  border-radius: 3px;
+  display: none;
+}
+
+.latent-z-viewer.pinned .latent-z-viewer-pinbadge { display: block; }
+
+.latent-z-viewer-svg {
+  width: 100%;
+  height: 140px;
+  display: block;
+}
+
+.latent-z-viewer-svg .bar { fill: var(--z-accent); }
+.latent-z-viewer-svg .bar-axis { stroke: rgba(0,0,0,0.25); stroke-width: 1; }
+.latent-z-viewer-svg .bar-zero { stroke: rgba(0,0,0,0.35); stroke-width: 1; }
+.latent-z-viewer-svg .bar-tick {
+  font: 9.5px ui-monospace, "SF Mono", Menlo, monospace;
+  fill: var(--muted);
+}
+
+.latent-z-viewer-caption {
+  margin: 8px 0 0;
+  font-size: 11.5px;
+  line-height: 1.45;
+  color: var(--muted);
+  text-align: center;
+}
+
+/* ---------- Backbone card (mirror of .ae-z-card, indigo accent) ----------
+   Makes the BACKBONE bottleneck card the interactive hot-spot for the
+   .backbone-viewer below. Hover → soft indigo border; click → pinned
+   solid indigo border. Same state machine as the latent-Z viewer. */
+.ae-bb-card {
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: border-color 0.15s ease, transform 0.15s ease,
+              box-shadow 0.15s ease;
+}
+
+.ae-bb-card:hover {
+  border-color: rgba(8, 65, 92, 0.30);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(8, 65, 92, 0.18);
+}
+
+.ae-bb-card:focus-visible {
+  outline: 2px solid var(--indigo);
+  outline-offset: 2px;
+}
+
+.ae-bb-card.pinned {
+  border-color: var(--indigo);
+  box-shadow: 0 2px 10px rgba(8, 65, 92, 0.28);
+}
+
+/* ---------- Backbone viewer (mirror of .latent-z-viewer) ----------
+   Same absolute positioning under the AE row. The two viewers are
+   mutually exclusive in JS — opening one hides the other — so they
+   can share the same anchor point without overlap. */
+.backbone-viewer {
+  position: absolute;
+  left: 50%;
+  top: calc(100% + 36px);
+  transform: translateX(-50%);
+  width: min(440px, 92vw);
+  background: var(--panel-bg);
+  border-radius: 10px;
+  box-shadow: 0 4px 18px rgba(0,0,0,0.10);
+  padding: 14px 16px 12px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease, box-shadow 0.15s ease,
+              border-color 0.15s ease;
+  border: 1px solid transparent;
+  z-index: 5;
+}
+
+.backbone-viewer.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.backbone-viewer.pinned {
+  border-color: var(--indigo);
+  box-shadow: 0 4px 22px rgba(8, 65, 92, 0.25);
+}
+
+.backbone-viewer-close {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  appearance: none;
+  border: none;
+  background: transparent;
+  font-size: 18px;
+  line-height: 1;
+  color: var(--muted);
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+  display: none;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+
+.backbone-viewer-close:hover {
+  background: rgba(0,0,0,0.05);
+  color: var(--text);
+}
+
+.backbone-viewer.pinned .backbone-viewer-close { display: block; }
+
+.backbone-viewer-pinbadge {
+  position: absolute;
+  top: 8px;
+  left: 10px;
+  font: 600 9px/1 ui-monospace, "SF Mono", Menlo, monospace;
+  letter-spacing: 0.16em;
+  color: var(--indigo);
+  padding: 2px 6px;
+  border: 1px solid rgba(8, 65, 92, 0.30);
+  border-radius: 3px;
+  display: none;
+}
+
+.backbone-viewer.pinned .backbone-viewer-pinbadge { display: block; }
+
+.backbone-viewer-svg {
+  width: 100%;
+  height: 150px;
+  display: block;
+}
+
+.backbone-viewer-svg .bb-bond { stroke: var(--indigo); stroke-width: 2.2; stroke-linecap: round; }
+.backbone-viewer-svg .bb-dbond-outer { stroke: var(--indigo); stroke-width: 4.6; stroke-linecap: round; opacity: 0.22; }
+.backbone-viewer-svg .bb-atom-c { fill: var(--indigo); }
+.backbone-viewer-svg .bb-atom-n { fill: #5577B5; }
+.backbone-viewer-svg .bb-atom-o { fill: #C45656; }
+.backbone-viewer-svg .bb-atom-ca { fill: var(--indigo); stroke: #fff; stroke-width: 1.5; }
+.backbone-viewer-svg .bb-label {
+  font: 600 10.5px ui-monospace, "SF Mono", Menlo, monospace;
+  fill: #fff;
+  text-anchor: middle;
+  dominant-baseline: central;
+  pointer-events: none;
+}
+.backbone-viewer-svg .bb-tors {
+  font: italic 600 11px "Times New Roman", Cambria, Georgia, serif;
+  fill: var(--indigo);
+  text-anchor: middle;
+}
+.backbone-viewer-svg .bb-tors-arc {
+  fill: none;
+  stroke: var(--indigo);
+  stroke-width: 1.2;
+  stroke-dasharray: 3 2;
+  opacity: 0.55;
+}
+
+.backbone-viewer-caption {
+  margin: 8px 0 0;
+  font-size: 11.5px;
+  line-height: 1.45;
+  color: var(--muted);
+  text-align: center;
+}
+
+/* (Guide-line SVG removed — replaced by a shared accent colour on the
+   word "LATENT Z" in the bottleneck label and the t-SNE panel title.) */
+
+/* (legacy .ae-guide-arrows rules removed — replaced by body-level .z-guide) */
+
+.ae-error {
+  margin-top: 24px;
+  text-align: center;
+  color: #b04040;
+  font-size: 13px;
+}
+
+@media (max-width: 760px) {
+  .ae-diagram {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .ae-arrow svg { transform: rotate(90deg); }
+  .ae-guide-arrows { display: none; }
 }
