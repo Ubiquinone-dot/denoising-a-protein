@@ -12,43 +12,8 @@
   <header class="page-header">
     <h1>How diffusion generates protein structures</h1>
     <p class="byline">An interactive visualization project by Jasper Butcher</p>
-    <p class="scroll-hint">↓ scroll to noise</p>
+    <p class="scroll-hint">↓ scroll</p>
   </header>
-
-  <section class="scrolly">
-    <div class="sticky-viz">
-      <div class="viz-toolbar">
-        <div class="hero-switch" role="radiogroup" aria-label="hero protein">
-          <button class="hero-btn active" data-hero="1qys">1QYS</button>
-          <button class="hero-btn"        data-hero="1enh">1ENH</button>
-          <button class="hero-btn"        data-hero="1ubq">1UBQ</button>
-        </div>
-        <div class="mode-switch" role="radiogroup" aria-label="noise schedule">
-          <button class="mode-btn active" data-mode="edm">Diffusion</button>
-          <button class="mode-btn"        data-mode="flow">Flow matching</button>
-        </div>
-      </div>
-      <div class="flow-three-col">
-        <aside class="mode-explainer">
-          <div class="mode-explainer-title">how it's trained</div>
-          <p class="mode-explainer-body">
-            <!-- text swapped on mode change -->
-          </p>
-        </aside>
-        <div class="panel hero-panel ngl-stage" data-panel="noise-hero" aria-label="forward-noising of hero protein"></div>
-        <div class="schedule-card">
-          <div class="schedule-title">noise σ vs τ</div>
-          <svg class="schedule-svg" aria-label="noise σ as a function of τ"></svg>
-          <div class="readout">
-            <span>τ <span class="t-val">0.00</span></span>
-            <span>σ <span class="sigma-val">0.00</span> Å</span>
-          </div>
-        </div>
-      </div>
-      <div class="hero-label"><span class="hero-label-name">1QYS</span> &middot; <span class="mode-label">Diffusion</span>, τ ∈ [0, 1]</div>
-    </div>
-    <div class="scroll-spacer" aria-hidden="true"></div>
-  </section>
 
   <section class="ae-section">
     <h2>Encoding all-atom structures with an autoencoder for sidechains</h2>
@@ -115,6 +80,41 @@
         </p>
       </div>
     </div>
+  </section>
+
+  <section class="scrolly">
+    <div class="sticky-viz">
+      <div class="viz-toolbar">
+        <div class="hero-switch" role="radiogroup" aria-label="hero protein">
+          <button class="hero-btn active" data-hero="1qys">1QYS</button>
+          <button class="hero-btn"        data-hero="1enh">1ENH</button>
+          <button class="hero-btn"        data-hero="1ubq">1UBQ</button>
+        </div>
+        <div class="mode-switch" role="radiogroup" aria-label="noise schedule">
+          <button class="mode-btn active" data-mode="edm">Diffusion</button>
+          <button class="mode-btn"        data-mode="flow">Flow matching</button>
+        </div>
+      </div>
+      <div class="flow-three-col">
+        <aside class="mode-explainer">
+          <div class="mode-explainer-title">how it's trained</div>
+          <p class="mode-explainer-body">
+            <!-- text swapped on mode change -->
+          </p>
+        </aside>
+        <div class="panel hero-panel ngl-stage" data-panel="noise-hero" aria-label="forward-noising of hero protein"></div>
+        <div class="schedule-card">
+          <div class="schedule-title">noise σ vs τ</div>
+          <svg class="schedule-svg" aria-label="noise σ as a function of τ"></svg>
+          <div class="readout">
+            <span>τ <span class="t-val">0.00</span></span>
+            <span>σ <span class="sigma-val">0.00</span> Å</span>
+          </div>
+        </div>
+      </div>
+      <div class="hero-label"><span class="hero-label-name">1QYS</span> &middot; <span class="mode-label">Diffusion</span>, τ ∈ [0, 1]</div>
+    </div>
+    <div class="scroll-spacer" aria-hidden="true"></div>
   </section>
 
   <section class="latent-atlas">
