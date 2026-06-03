@@ -883,8 +883,12 @@ html, body {
   min-height: calc(100vh - 240px);
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  /* Top-align the diagram so it reads a bit higher on the landing
+     fold instead of dead-center under the header. min-height still
+     keeps the noising scrolly section below the viewport. */
+  justify-content: flex-start;
   align-items: center;
+  padding-top: 32px;
 }
 
 /* The diagram itself constrains its width to the row; keep it from
