@@ -10,18 +10,19 @@
 </head>
 <body>
   <header class="page-header">
-    <h1>How diffusion generates protein structures</h1>
+    <h1>Generating proteins by learning backbones and latents</h1>
     <p class="byline">An interactive visualization project by Jasper Butcher</p>
-    <p class="scroll-hint">↓ scroll</p>
   </header>
 
   <section class="ae-section">
-    <h2>Encoding all-atom structures with an autoencoder for sidechains</h2>
-    <p class="ae-tagline">
-      The diffusion model doesn't see atoms. It sees an 8-D latent
-      <strong>Z</strong> per residue. The backbone stays explicit; only
-      the side chain is encoded.
-    </p>
+    <div class="ae-intro">
+      <h2>Encoding all-atom structures with an autoencoder for sidechains</h2>
+      <p class="ae-tagline">
+        Each residue collapses to its explicit backbone frame plus an
+        8-D latent <strong>Z</strong> &mdash; what the diffusion model
+        actually sees in place of atoms.
+      </p>
+    </div>
     <div class="ae-diagram">
       <div class="ae-row">
         <div class="ae-step">
@@ -80,6 +81,7 @@
         </p>
       </div>
     </div>
+    <p class="scroll-hint ae-scroll-hint">↓ scroll to noise</p>
   </section>
 
   <section class="scrolly">
