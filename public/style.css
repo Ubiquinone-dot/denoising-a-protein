@@ -76,11 +76,12 @@ html, body {
 .page-header h1 {
   font-size: 44px;
   letter-spacing: -0.03em;
-  line-height: 1.05;
+  line-height: 1.1;
   margin: 0 0 10px;
   color: var(--indigo);
   text-align: center;
-  white-space: nowrap;
+  /* Title can wrap at narrow viewports — `white-space: nowrap` would
+     overflow the 760px container and push the centered text off-axis. */
 }
 
 .byline {
