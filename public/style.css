@@ -874,6 +874,26 @@ html, body {
   position: relative;
 }
 
+/* Landing variant: the AE section is the first thing under the header
+   when no intro heading sits above it. Fill the remaining viewport so
+   the diagram reads as the centerpiece of the landing page and the
+   noising section below stays just out of view until scroll. */
+.ae-section.ae-landing {
+  margin-top: 0;
+  min-height: calc(100vh - 240px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+/* The diagram itself constrains its width to the row; keep it from
+   stretching when the section becomes a flex column with align-items
+   center. */
+.ae-section.ae-landing .ae-diagram {
+  width: 100%;
+}
+
 .ae-section h2 {
   font-size: 28px;
   letter-spacing: -0.01em;
