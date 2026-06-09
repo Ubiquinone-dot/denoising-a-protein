@@ -1,6 +1,6 @@
-/* Forward-noising explorable — NGL + D3 renderer.
+/* Forward-noising explorable - NGL + D3 renderer.
  *
- * One protein, two noise schedules: EDM (Karras et al. 2022 — the schedule
+ * One protein, two noise schedules: EDM (Karras et al. 2022 - the schedule
  * RFdiffusion / RFD3 use) and flow matching (straight-line interpolation
  * from clean structure to a fixed-σ Gaussian cloud). User flips between
  * them with the mode toggle above the panel. In both modes the scroll-
@@ -31,7 +31,7 @@
     "1ubq": { label: "1UBQ · Ubiquitin", pdbPath: "data/1ubq.pdb" },
   };
   let currentHero = "1qys";  // default
-  // Per-hero mutable state — gets re-bound on every setHero() call.
+  // Per-hero mutable state - gets re-bound on every setHero() call.
   let heroLen = 0;
   let edmFrames = null;
   let flowFrames = null;
@@ -43,15 +43,15 @@
   //   - schedule: array of (t, σ) sample points that defines the plotted curve
   //   - maxFrameFraction: fraction of N to actually advance the structure to.
   //     EDM blows up at τ = 1 (σ ~ 160 Å); render past 0.65 and NGL's bond
-  //     store OOMs. The PLOT still ranges 0..1 — the structure just freezes
+  //     store OOMs. The PLOT still ranges 0..1 - the structure just freezes
   //     at the last visually useful frame while the marker rides to the end.
   //   - sigmaRange: y-axis domain for the schedule plot.
   // -------------------------------------------------------------------------
-  // Each mode supplies `tToFrameT(t)` — remap from scroll-τ ∈ [0,1] to the
+  // Each mode supplies `tToFrameT(t)` - remap from scroll-τ ∈ [0,1] to the
   // effective interpolation coefficient used to look up a frame. For EDM
   // the precomputed frames already follow the Karras schedule at linear
   // step indices, so it's identity. For nonlinear flow matching we look
-  // up the linearly-interpolated frames at √τ instead of τ — that yields
+  // up the linearly-interpolated frames at √τ instead of τ - that yields
   // a structure whose noise magnitude matches σ_max·√τ.
   const MODES = {
     edm: {
@@ -80,7 +80,7 @@
       explainer:
         "Flow matching defines a smooth path between data and a fixed " +
         "prior (a Gaussian here), then trains the model to predict the " +
-        "velocity field along it. No noise schedule — just an " +
+        "velocity field along it. No noise schedule - just an " +
         "interpolation between the protein and the prior.",
       get frames() { return flowFrames; },
       maxFrameFraction: 1.0,
@@ -132,7 +132,7 @@
   // we want frames to be reproducible *within* a session (so τ-driven
   // re-renders look stable) but we don't need cross-session determinism.
   // The same seed is reused across every protein, so the noise field has
-  // the same "shape" — visually the noising character feels consistent
+  // the same "shape" - visually the noising character feels consistent
   // even as the underlying protein changes.
   // -------------------------------------------------------------------------
   function mulberry32(seed) {
@@ -219,12 +219,12 @@
   }
 
   // -------------------------------------------------------------------------
-  // Single scroll-driven panel — mode picks which trajectory to render.
+  // Single scroll-driven panel - mode picks which trajectory to render.
   // -------------------------------------------------------------------------
   const scrollyEl = document.querySelector(".scrolly");
   if (!scrollyEl) throw new Error("no .scrolly element");
 
-  // Hero stage + panel — recreated on every hero swap (different residue
+  // Hero stage + panel - recreated on every hero swap (different residue
   // counts mean the atomStore length changes, so we can't reuse).
   let panel = null;
 
@@ -244,7 +244,7 @@
     const heroPdb = buildChainPdb(cleanCoords, "A", 1, 1) + "\nEND\n";
     // Tear down any previous stage so its WebGL context can be freed.
     // NGL's stage.dispose() releases the GL context but does NOT remove
-    // the wrapper <div>/canvas it appended into the panel element — so
+    // the wrapper <div>/canvas it appended into the panel element - so
     // back-to-back hero swaps would stack canvases and the original
     // (top-z) canvas would keep occluding every subsequent render, making
     // it look like the selector did nothing. Explicitly empty the panel
@@ -307,7 +307,7 @@
   }
 
   // Mode toggle wiring. Pushes the active mode's explainer text into the
-  // left-of-protein side card too — that card describes the training
+  // left-of-protein side card too - that card describes the training
   // recipe for whichever schedule the user is looking at right now.
   const explainerBodyEl = document.querySelector(".mode-explainer-body");
   function applyExplainer(m) {
@@ -399,7 +399,7 @@
         ? niceLogTicks(mode.sigmaRange[0], mode.sigmaRange[1])
         : niceLinearTicks(mode.sigmaRange[0], mode.sigmaRange[1], 4);
 
-      // Gridlines — drawn first so axes/curve sit on top.
+      // Gridlines - drawn first so axes/curve sit on top.
       const gridG = root.append("g").attr("class", "grid");
       xTickVals.forEach((tx) => {
         if (tx === 0 || tx === 1) return;
@@ -451,7 +451,7 @@
           .text(formatYTick(ty));
       });
 
-      // Axis titles — moved well clear of the corner ticks.
+      // Axis titles - moved well clear of the corner ticks.
       axisG.append("text")
         .attr("class", "axis-label")
         .attr("x", (W - padR + padL) / 2)
@@ -530,7 +530,7 @@
   // -------------------------------------------------------------------------
   // Single-panel setup. setFrame(framesArray, idx) writes coords directly
   // into the structure's atomStore so the SAME stage / component / camera
-  // is reused across mode switches — just the atom positions swap.
+  // is reused across mode switches - just the atom positions swap.
   // -------------------------------------------------------------------------
   async function setupPanel(panelDataAttr, pdbString) {
     const el = document.querySelector(`[data-panel="${panelDataAttr}"]`);
@@ -541,7 +541,7 @@
       quality: "high",
       sampleLevel: 1,
     });
-    // No user-driven camera — viz is fully scroll-controlled.
+    // No user-driven camera - viz is fully scroll-controlled.
     stage.viewer.renderer.domElement.style.pointerEvents = "none";
 
     const blob = new Blob([pdbString], { type: "text/plain" });
@@ -566,7 +566,7 @@
     // Per-scroll frame update: write straight into the structure's
     // atomStore (Float32Array) and trigger a single re-render.
     //
-    // NOTE: we deliberately skip structure.refreshPosition() — it rebuilds
+    // NOTE: we deliberately skip structure.refreshPosition() - it rebuilds
     // the bond store / spatial hash from the new coords, and at EDM's
     // extreme-σ frames (σ ~ 2500 Å) the bond store tries to allocate a
     // multi-gigabyte buffer and throws RangeError. updateRepresentations
@@ -631,7 +631,7 @@
 /* =========================================================================
  * Autoencoder diagram. Two NGL panels of 1ENH side-by-side: the left shows
  * all-atom (sticks + cartoon), the right shows backbone-only ribbon overlaid
- * on a stylized "Z" — the latent bottleneck the diffusion model actually
+ * on a stylized "Z" - the latent bottleneck the diffusion model actually
  * sees. Guide arrows from the Z point down to the t-SNE section and fade
  * out as the latent-atlas section enters the viewport.
  * ========================================================================= */
@@ -642,13 +642,13 @@
   if (!allAtomEl || !backboneEl) return;
 
   function newStage(el, bg) {
-    // NGL Stage with minimal options — `quality: "high"` + `sampleLevel`
+    // NGL Stage with minimal options - `quality: "high"` + `sampleLevel`
     // can trigger a "Canvas has an existing context of a different type"
     // error when too many stages already exist on the page, since NGL
     // negotiates webgl2 → webgl1 fallback and the second getContext()
     // call on the same canvas fails. Defaults are safe.
     const stage = new NGL.Stage(el, { backgroundColor: bg });
-    // Read-only — no user rotation; diagrams should stay still.
+    // Read-only - no user rotation; diagrams should stay still.
     if (stage.viewer.renderer?.domElement) {
       stage.viewer.renderer.domElement.style.pointerEvents = "none";
     }
@@ -657,7 +657,7 @@
 
   // Force NGL to draw + keep pixels alive. NGL's renderer uses
   // preserveDrawingBuffer=true so a single render *should* persist, but
-  // empirically — especially on Chrome with multiple WebGL contexts —
+  // empirically - especially on Chrome with multiple WebGL contexts -
   // the back buffer can clear if the canvas isn't touched again before
   // the compositor runs. We trigger several renders across rAF ticks,
   // and re-trigger on IntersectionObserver enter.
@@ -688,11 +688,11 @@
   // All-atom view: gray cartoon ribbon for the backbone + teal sticks for
   // every heavy-atom sidechain. The cartoon is the "structure" the model
   // operates over (held fixed by the AE), and the teal sticks are the
-  // *only* thing the AE has to compress into z — matching the LATENT Z
+  // *only* thing the AE has to compress into z - matching the LATENT Z
   // accent everywhere else on the page so the chain of logic reads
   // visually: teal atoms → teal Z → teal latent space.
   const aaScheme = NGL.ColormakerRegistry.addScheme(function () {
-    // sidechainAttached includes CA — keep CA grey so the stick visibly
+    // sidechainAttached includes CA - keep CA grey so the stick visibly
     // anchors to the cartoon, while the actual sidechain heavy atoms
     // (CB, CG, etc.) read as teal.
     const BB = new Set(["N", "CA", "C", "O", "OXT", "H", "HA"]);
@@ -719,7 +719,7 @@
   const stageBb = newStage(backboneEl, "#f3f0f5");
   const compBb = await stageBb.loadFile("data/1enh.pdb", { ext: "pdb", defaultRepresentation: false });
   // Backbone-only ribbon. Same chain, no side chains. Paper_indigo ribbon
-  // — same hex as the BACKBONE label (.backbone-highlight) so the structural
+  // - same hex as the BACKBONE label (.backbone-highlight) so the structural
   // accent reads in both text and 3D. Pairs with the paper_teal LATENT Z
   // accent: cool palette duo for the encoder's two outputs.
   compBb.addRepresentation("cartoon", {
@@ -732,7 +732,7 @@
   const burstBb = keepAlive(stageBb);
 
   // Decoder-side panel: same all-atom ball+stick rendering as the input.
-  // The model is an autoencoder, so the reconstructed structure ≈ input —
+  // The model is an autoencoder, so the reconstructed structure ≈ input -
   // showing it makes the encoder-bottleneck-decoder loop explicit.
   let stageDec = null, compDec = null, burstDec = null;
   if (decodedEl) {
@@ -771,9 +771,9 @@
   // to the .ae-z-card box above. Lives below the AE row.
   //
   // State machine:
-  //   hidden       — opacity 0, pointer-events none, no layout cost
-  //   hover-shown  — mouseenter on Z card; leaves on mouseleave
-  //   pinned       — click on Z card; persistent. × button, Esc, or
+  //   hidden       - opacity 0, pointer-events none, no layout cost
+  //   hover-shown  - mouseenter on Z card; leaves on mouseleave
+  //   pinned       - click on Z card; persistent. × button, Esc, or
   //                  another click on the Z card returns to hidden.
   // -------------------------------------------------------------------------
   const zCard   = document.querySelector(".ae-z-card");
@@ -794,7 +794,7 @@
     }
     if (!zVec) zVec = [0.6, -1.1, 0.3, 1.4, -0.5, 0.9, -0.2, 0.7];
 
-    // Bar chart — horizontal axis = z_1..z_8, vertical = signed value.
+    // Bar chart - horizontal axis = z_1..z_8, vertical = signed value.
     (function drawBars() {
       const svg = d3.select(viewSvg);
       const W = 380, H = 140;
@@ -862,7 +862,7 @@
     });
 
     // -----------------------------------------------------------------------
-    // Backbone viewer — mirror of the latent-Z viewer, indigo accent. Shows
+    // Backbone viewer - mirror of the latent-Z viewer, indigo accent. Shows
     // a small SVG of one N-CA-C(=O) peptide unit with φ/ψ torsion labels,
     // anchored under the same AE row as the Z viewer. The two viewers are
     // mutually exclusive: opening one collapses the other so they don't
@@ -1003,7 +1003,7 @@
   }
 })().catch(err => {
   console.error("autoencoder diagram failed:", err);
-  // Non-fatal — surface a quiet note next to the section instead of
+  // Non-fatal - surface a quiet note next to the section instead of
   // shouting at the user. The latent atlas section below still works.
   const sec = document.querySelector(".ae-section");
   if (sec) {
@@ -1077,7 +1077,7 @@
   //      This is matplotlib's `tab20` (= D3 schemeCategory20, = vega tab20),
   //      the de-facto 20-colour categorical palette in scientific viz. It
   //      pairs ten hues × {saturated, soft} so every adjacent pair shares a
-  //      hue family — half the swatches still read as pastel, but every
+  //      hue family - half the swatches still read as pastel, but every
   //      slot is distinguishable from every other slot (no three-way pink
   //      collision like the ColorBrewer Set3+Pastel1 stack had).
   //
@@ -1095,26 +1095,26 @@
   //   negative              → warm pinks
   //   special (GLY/CYS)     → neutrals
   const AA_PALETTE_20 = [
-    "#FFE0AC", // ALA — navaho   (hydrophobic)
-    "#4B5FAA", // ARG — darkblue (positive)
-    "#7C8BC8", // ASN — periwinkle (polar)
-    "#FFACB7", // ASP — pink     (negative)
-    "#5C7592", // CYS — steel    (special)
-    "#9596C6", // GLN — lightblue (polar)
-    "#FFC6B2", // GLU — melon    (negative)
-    "#08415C", // GLY — indigo   (special)
-    "#C88497", // HIS — dustyrose (aromatic)
-    "#A9C99E", // ILE — sage     (hydrophobic)
-    "#C8C383", // LEU — olive    (hydrophobic)
-    "#6686C5", // LYS — blue     (positive)
-    "#82CDB9", // MET — seafoam  (hydrophobic)
-    "#D59AB5", // PHE — purple   (aromatic)
-    "#D49580", // PRO — terracotta (hydrophobic)
-    "#4FB9AF", // SER — teal     (polar)
-    "#87A8D0", // THR — skyblue  (polar)
-    "#A07895", // TRP — plum     (aromatic)
-    "#B5A8D0", // TYR — lavender (aromatic)
-    "#E8C58A", // VAL — mustard  (hydrophobic)
+    "#FFE0AC", // ALA - navaho   (hydrophobic)
+    "#4B5FAA", // ARG - darkblue (positive)
+    "#7C8BC8", // ASN - periwinkle (polar)
+    "#FFACB7", // ASP - pink     (negative)
+    "#5C7592", // CYS - steel    (special)
+    "#9596C6", // GLN - lightblue (polar)
+    "#FFC6B2", // GLU - melon    (negative)
+    "#08415C", // GLY - indigo   (special)
+    "#C88497", // HIS - dustyrose (aromatic)
+    "#A9C99E", // ILE - sage     (hydrophobic)
+    "#C8C383", // LEU - olive    (hydrophobic)
+    "#6686C5", // LYS - blue     (positive)
+    "#82CDB9", // MET - seafoam  (hydrophobic)
+    "#D59AB5", // PHE - purple   (aromatic)
+    "#D49580", // PRO - terracotta (hydrophobic)
+    "#4FB9AF", // SER - teal     (polar)
+    "#87A8D0", // THR - skyblue  (polar)
+    "#A07895", // TRP - plum     (aromatic)
+    "#B5A8D0", // TYR - lavender (aromatic)
+    "#E8C58A", // VAL - mustard  (hydrophobic)
   ];
   // Convert restype id (1-indexed; 0 = MSK) → AA palette colour. Falls back
   // to the atlas-supplied colour for any id outside 1..20 (e.g. MSK / UNK).
@@ -1146,7 +1146,7 @@
   };
   const HYDRO_LABELS = ["hydrophobic", "polar", "acidic", "basic"];
 
-  // ---- Heavy-atom-count scheme — one color per residue per its number
+  // ---- Heavy-atom-count scheme - one color per residue per its number
   //      of heavy atoms (from the decoded structure). ----
   const ATOM_COUNTS = points.map((p) => p.atoms.length);
   const ATOM_MIN = d3.min(ATOM_COUNTS);
@@ -1182,7 +1182,7 @@
   const STRAIN_HI = sortedStrain[Math.floor(sortedStrain.length * 0.95)];
   const strainRamp = d3.scaleSequential(d3.interpolateRgbBasis(["#4FB9AF", "#9596C6", "#08415C"])).domain([STRAIN_LO, STRAIN_HI]);
 
-  // ---- Active colour scheme — switched by the four buttons up top. ----
+  // ---- Active colour scheme - switched by the four buttons up top. ----
   let scheme = "aa";
   function colorForPoint(p) {
     if (scheme === "aa") return aaColor(p.gt_restype);
@@ -1204,7 +1204,7 @@
   function colorForRt(rt) { return aaColor(rt); }
 
   const padding = 16;
-  // Use SVG bounding box for scale ranges — responsive without re-layout.
+  // Use SVG bounding box for scale ranges - responsive without re-layout.
   function rangeFor(svg) {
     const r = svg.getBoundingClientRect();
     return { w: r.width || 540, h: r.height || 420 };
@@ -1239,10 +1239,10 @@
       .attr("stroke-width", 0.5);
 
   // -------------------------------------------------------------------------
-  // Legend — re-rendered when the scheme switches. For the AA scheme we
+  // Legend - re-rendered when the scheme switches. For the AA scheme we
   // show one chip per AA, click to filter. For hydrophobicity we show 4
   // bucket chips (also filterable). For heavy-atoms we show a gradient bar
-  // with min / max counts (no filter — would be arbitrary).
+  // with min / max counts (no filter - would be arbitrary).
   // -------------------------------------------------------------------------
   const legendEl = document.querySelector(".latent-legend");
   const presentRts = Array.from(new Set(points.map((p) => p.gt_restype))).sort((a, b) => a - b);
@@ -1257,7 +1257,7 @@
     legendEl.className = "latent-legend";
 
     if (scheme === "atoms" || scheme === "energy" || scheme === "rotamer") {
-      // Gradient bar — no clickable filter, just min / max labels.
+      // Gradient bar - no clickable filter, just min / max labels.
       const grad = document.createElement("div");
       grad.className = "legend-gradient";
       const bar = document.createElement("div");
@@ -1336,7 +1336,7 @@
   // -------------------------------------------------------------------------
   // NGL viewer for the decoded residue. The camera is locked once on the
   // shared canonical CA position so the residue doesn't jump between hovers
-  // — only the atoms move. The user can still drag to rotate / scroll to
+  // - only the atoms move. The user can still drag to rotate / scroll to
   // zoom; that rotation persists across residue swaps because we restore
   // the saved camera orientation after each load instead of running
   // autoView again.
@@ -1356,7 +1356,7 @@
   let pinnedIdx = null;         // index of click-pinned point; null = follow hover
   let lastRenderedPoint = null; // point currently shown in the viewer / readout
 
-  // Color by atom element — backbone in a soft palette, sidechain in the
+  // Color by atom element - backbone in a soft palette, sidechain in the
   // dot's residue color so hovered identity reads at a glance.
   function makeResidueScheme(residueColor) {
     return NGL.ColormakerRegistry.addScheme(function () {
@@ -1385,7 +1385,7 @@
     const blob = new Blob([pdb], { type: "text/plain" });
     const component = await stage.loadFile(blob, { ext: "pdb", defaultRepresentation: false });
     if (token !== renderToken) {
-      // A newer hover already started — discard this load.
+      // A newer hover already started - discard this load.
       stage.removeComponent(component);
       return;
     }
@@ -1404,11 +1404,11 @@
 
     // Camera handling: lock once on the canonical CA at origin with a fixed
     // wide zoom (sized for the biggest residue, TRP) so every subsequent
-    // swap keeps the camera *exactly* where it was — only atoms move.
+    // swap keeps the camera *exactly* where it was - only atoms move.
     //
     // We seed the orientation off a synthetic axis-aligned bounding box that
     // covers the worst-case sidechain reach (~7 Å in any direction). That
-    // way the first real residue doesn't drive the zoom level — TRP's
+    // way the first real residue doesn't drive the zoom level - TRP's
     // 6 Å indole fits and ALA's lone CB sits at the center of a comfortably
     // sized panel. Subsequent loads call `orient()` to restore.
     if (savedOrientation === null) {
@@ -1418,7 +1418,7 @@
       // reach = tighter framing. NGL's autoView pads heavily, so we need
       // a small bbox AND an explicit zoom-in below to actually frame the
       // residue at a visible size. 1.0 Å keeps ALA centred and lets
-      // TRP's 6 Å indole still mostly fit (edges may clip — that's the
+      // TRP's 6 Å indole still mostly fit (edges may clip - that's the
       // size-of-sidechain story).
       const REACH = 1.0;
       const bboxAtoms = [];
@@ -1429,16 +1429,16 @@
       const bboxBlob = new Blob([bboxPdb], { type: "text/plain" });
       const bboxComp = await stage.loadFile(bboxBlob, { ext: "pdb", defaultRepresentation: false });
       bboxComp.addRepresentation("point", { sele: "all", radius: 0.01 });
-      bboxComp.autoView();  // instant snap — animated autoView(N) reads
+      bboxComp.autoView();  // instant snap - animated autoView(N) reads
                             // orientation mid-animation and saves the wrong frame.
       // Tilt off-axis. autoView lands on a canonical axis-aligned view
       // (camera at +z looking toward −z), which leaves C and O sitting
-      // almost directly behind CA in our canonical GLU65 backbone frame —
+      // almost directly behind CA in our canonical GLU65 backbone frame -
       // not a useful base orientation for showing the backbone.
       //
       // We swing the camera ≈ +Hα instead. For an L-amino acid with this
       // backbone, the implicit Cα-Hα bond points at roughly (+0.98, −0.01,
-      // +0.21) — derived from tetrahedral geometry around CA given N at
+      // +0.21) - derived from tetrahedral geometry around CA given N at
       // (−0.60, +1.23, +0.52) and C at (−0.20, −0.13, −1.51). Looking
       // down that axis is the classic biochem-textbook view: N upper-left,
       // CA centre, C lower-right, O further lower-right, side chain
@@ -1446,7 +1446,7 @@
       // a glance.
       //
       // 70° yaw around y gets the camera most of the way there. The
-      // small +pitch and +roll deliberately *don't* land cleanly on +Hα —
+      // small +pitch and +roll deliberately *don't* land cleanly on +Hα -
       // a few degrees of jitter keep aromatic ring planes oblique to the
       // camera (so TRP / PHE / TYR / HIS still show their depth) and
       // stop the backbone from reading as a flat schematic.
@@ -1456,7 +1456,7 @@
       // Extra zoom-IN on top of autoView. autoView pads heavily, so
       // without this the residue floats lonely in the middle. NGL's
       // viewerControls.zoom(z) multiplies the camera distance by
-      // (1 - z) — so positive z = closer, negative z = further. 0.25
+      // (1 - z) - so positive z = closer, negative z = further. 0.25
       // tightens the framing without pushing the near plane through
       // the molecule (which would clip the residue entirely).
       stage.viewerControls.zoom(0.25);
@@ -1482,7 +1482,7 @@
     renderChiPanel(point);
 
     // Cross-sync: also light up the matching t-SNE dot. Skip if a pin is
-    // active — the pin handler maintains its own highlight separately.
+    // active - the pin handler maintains its own highlight separately.
     if (pinnedIdx === null) {
       circles.classed("active", false).attr("r", 3.6);
       circles.filter((d) => d === point).classed("active", true).attr("r", 5.4);
@@ -1492,7 +1492,7 @@
   // -------------------------------------------------------------------------
   // Chi-space distribution. For the currently active residue's AA we show
   // either:
-  //   * a 2-D χ₁ × χ₂ scatter (most AAs — same convention as Lovell /
+  //   * a 2-D χ₁ × χ₂ scatter (most AAs - same convention as Lovell /
   //     Dunbrack rotamer libraries),
   //   * a 1-D wrapped strip of χ₁ for AAs with only one defined dihedral,
   //   * or a "no χ angles" placeholder for GLY / ALA.
@@ -1517,7 +1517,7 @@
   }
 
   // -------------------------------------------------------------------------
-  // Shared click handler — the chi panel + t-SNE both call this so their
+  // Shared click handler - the chi panel + t-SNE both call this so their
   // pin / unpin behaviour stays in lock-step. Returns the new pinned state.
   // -------------------------------------------------------------------------
   function togglePinAt(point) {
@@ -1553,7 +1553,7 @@
       const cell = document.querySelector(`.chi${k}-val`).closest(".chi-cell");
       const el   = document.querySelector(`.chi${k}-val`);
       if (v === null || v === undefined) {
-        el.textContent = "—";
+        el.textContent = "-";
         cell.classList.add("unset");
       } else {
         el.textContent = `${v >= 0 ? "+" : ""}${v.toFixed(0)}°`;
@@ -1561,7 +1561,7 @@
       }
     });
 
-    // SVG geometry — driven by computed size so it stays responsive.
+    // SVG geometry - driven by computed size so it stays responsive.
     const box = chiSvg.node().getBoundingClientRect();
     const W = box.width || 240, H = box.height || 240;
     chiSvg.attr("viewBox", `0 0 ${W} ${H}`).attr("preserveAspectRatio", "xMidYMid meet");
@@ -1604,7 +1604,7 @@
       return;
     }
 
-    // 2-D χ₁ × χ₂ scatter. Even AAs with χ₃ / χ₄ get this view —
+    // 2-D χ₁ × χ₂ scatter. Even AAs with χ₃ / χ₄ get this view -
     // the extra dimensions are summarised in the readout cells below.
     const pad = 24;
     const xs = d3.scaleLinear().domain([-180, 180]).range([pad, W - pad]);
@@ -1748,7 +1748,7 @@
 
   // -------------------------------------------------------------------------
   // Standalone PDB ATOM line writer (the main IIFE has its own private one
-  // — we duplicate the few lines instead of refactoring its closure).
+  // - we duplicate the few lines instead of refactoring its closure).
   // -------------------------------------------------------------------------
   function fmtPdbAtomLocal(serial, atomName, resName, chainId, resseq, x, y, z) {
     const cols = new Array(80).fill(" ");

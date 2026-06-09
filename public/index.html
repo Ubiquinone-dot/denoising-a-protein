@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Learning how to make proteins — CSE 512 Final</title>
-  <link rel="stylesheet" href="style.css?v=28" />
+  <title>Learning how to make proteins - CSE 512 Final</title>
+  <link rel="stylesheet" href="style.css?v=31" />
   <script src="https://d3js.org/d3.v7.min.js"></script>
   <script src="https://unpkg.com/ngl@2.3.1/dist/ngl.js"></script>
 </head>
@@ -12,7 +12,60 @@
   <header class="page-header">
     <h1>Generating proteins by learning backbones and latents</h1>
     <p class="byline">An interactive visualization project by Jasper Butcher</p>
+    <p class="subtitle">
+      A scroll-driven tour of <em>partially-latent diffusion</em> - a
+      recent paradigm for designing new proteins, where a generative model
+      learns to draw the backbone in 3D and to encode each amino-acid
+      side chain as a compact eight-number &ldquo;fingerprint&rdquo;.
+    </p>
+    <button class="report-btn" type="button" data-report-open>
+      Read the report
+    </button>
   </header>
+
+  <dialog class="report-dialog" id="report-dialog" aria-labelledby="report-dialog-title">
+    <button
+      class="report-dialog-close"
+      type="button"
+      data-report-close
+      aria-label="close report"
+    >&times;</button>
+    <h2 id="report-dialog-title">About this project</h2>
+    <p>
+      <strong>Purpose.</strong> Partially-latent diffusion is a recent
+      paradigm for protein design that sidesteps the discrete
+      combinatorics of amino acids by encoding each side chain into a
+      continuous eight-dimensional vector <em>z</em>. A single diffusion
+      model then operates over backbone coordinates and these
+      <em>z</em>&rsquo;s simultaneously - generating an entire
+      protein in one shot rather than the traditional backbone-first,
+      sequence-second pipeline. The technique works, but the latent
+      space it builds is opaque: developers have no easy way to ask
+      &ldquo;what does the model actually think about a given
+      residue?&rdquo; without training expensive downstream evaluators.
+      This tool exists to fill that gap - to give newcomers a
+      concrete tour of how partially-latent diffusion works, and
+      practitioners a fast visual way to probe the quality of any
+      trained latent.
+    </p>
+    <p>
+      <strong>Visual encodings.</strong> The page is structured as three
+      linked views over the same model. A 3D protein viewer (NGL) shows
+      forward-noising on a chosen hero structure, paired with a
+      log-scale &sigma;&ndash;&tau; schedule plot that anchors the
+      noise level quantitatively as you scroll. A 2D t-SNE atlas of
+      decoded residues uses five interchangeable color encodings to ask
+      different questions of the same point cloud - a categorical
+      paper palette for the 20 amino acids, and a continuous
+      <em>crest</em> ramp for hydrophobicity, heavy-atom count, rotamer
+      strain, and latent norm &#x2016;z&#x2016;. Hovering any dot
+      decodes that latent into a real side chain rendered in a small
+      NGL viewer, and projects its torsions onto a &chi;-distribution
+      grid whose &plusmn;60&deg;/&plusmn;180&deg; axes act as reference
+      frames for ideal rotamer wells. Backbone, latent, atoms, and
+      dihedrals are all visible - and linked - at once.
+    </p>
+  </dialog>
 
   <section class="ae-section ae-landing">
     <div class="ae-diagram">
@@ -61,7 +114,7 @@
         <div class="latent-z-viewer-pinbadge" aria-hidden="true">PINNED</div>
         <svg class="latent-z-viewer-svg" aria-label="bar chart of the 8 z dimensions for a representative residue"></svg>
         <p class="latent-z-viewer-caption">
-          z &isin; &#8477;<sup>8</sup> per residue. All the diffusion model sees of the side chain &mdash; no atoms, just 8 numbers per position.
+          z &isin; &#8477;<sup>8</sup> per residue. All the diffusion model sees of the side chain - no atoms, just 8 numbers per position.
         </p>
       </div>
       <div class="backbone-viewer" aria-hidden="true" role="region" aria-label="backbone viewer">
@@ -69,11 +122,41 @@
         <div class="backbone-viewer-pinbadge" aria-hidden="true">PINNED</div>
         <svg class="backbone-viewer-svg" aria-label="sketch of one N-CA-C-O backbone unit with phi and psi torsions"></svg>
         <p class="backbone-viewer-caption">
-          One residue's backbone &mdash; four heavy atoms (N, C&alpha;, C, O) plus two torsions &phi;/&psi;. Held fixed through the autoencoder; the network only ever rewrites the side chain.
+          One residue's backbone - four heavy atoms (N, C&alpha;, C, O) plus two torsions &phi;/&psi;. Held fixed through the autoencoder; the network only ever rewrites the side chain.
         </p>
       </div>
     </div>
+    <p class="ae-tagline ae-tagline-below">
+      Every protein here is split in two by an autoencoder: a
+      <strong>backbone</strong> (the chain of heavy atoms that defines
+      the fold) plus a per-residue <strong>latent <em>z</em></strong>
+      - eight numbers that stand in for each side chain. The
+      diffusion model only ever sees the compact &ldquo;middle&rdquo;
+      of the diagram above.
+    </p>
     <p class="scroll-hint ae-scroll-hint">↓ scroll to noise</p>
+  </section>
+
+  <section class="interlude">
+    <h2>Noising the latents, not the atoms</h2>
+    <p>
+      Diffusion models generate by learning to undo noise: a network is
+      trained to remove a little Gaussian blur from real data, and those
+      denoising steps are chained together to draw new samples from
+      scratch. The catch for proteins is that atoms are discrete -
+      you can&rsquo;t smoothly &ldquo;noise&rdquo; a carbon into a
+      nitrogen without breaking chemistry.
+    </p>
+    <p>
+      Partially-latent diffusion sidesteps this by noising the
+      <em>backbone coordinates</em> and the <em>per-residue latent z</em>
+      separately. Both are continuous; both deform smoothly. Below, the
+      noise level &sigma; grows with diffusion time &tau; as the protein
+      blurs into Gaussian fog. Toggle between a classic
+      <em>diffusion</em> schedule and a newer <em>flow-matching</em> one
+      to see how the same protein is corrupted along two different
+      paths.
+    </p>
   </section>
 
   <section class="scrolly">
@@ -111,6 +194,30 @@
     <div class="scroll-spacer" aria-hidden="true"></div>
   </section>
 
+  <section class="latent-atlas-intro">
+    <h2>What does the latent space actually look like?</h2>
+    <p>
+      The autoencoder squeezes every side chain into the same
+      eight-dimensional space - but is that space actually
+      meaningful? Below, a few thousand decoded residues are projected
+      onto a 2D map using t-SNE, a technique that flattens
+      high-dimensional points so chemically similar ones land near each
+      other.
+    </p>
+    <p>
+      Hover any dot to see the side chain it decodes to, its rotamer
+      torsions, and its latent energy &#x2016;z&#x2016;. Switch the
+      coloring to recolor by amino-acid type, hydrophobicity, heavy-atom
+      count, rotamer strain, or latent norm - each lens exposes a
+      different way the model has organized its eight numbers.
+    </p>
+    <p class="muted">
+      Clean gradients are a good sign the latent has learned real
+      chemistry; messy clusters tell you where the model still has work
+      to do.
+    </p>
+  </section>
+
   <section class="latent-atlas">
     <div class="latent-grid">
       <div class="latent-tsne-panel">
@@ -135,11 +242,11 @@
             <div class="residue-line">
               <span class="label">residue</span>
               <span class="residue-pred-swatch"></span>
-              <span class="residue-pred-name">—</span>
+              <span class="residue-pred-name">-</span>
             </div>
             <div class="residue-line">
               <span class="label">heavy atoms</span>
-              <span class="residue-atom-count">—</span>
+              <span class="residue-atom-count">-</span>
             </div>
           </div>
           <p class="residue-hint">
@@ -151,10 +258,10 @@
           <h3>rotamer space <span class="chi-aa-name"></span></h3>
           <svg class="chi-svg" aria-label="side-chain dihedral distribution"></svg>
           <div class="chi-readout">
-            <span class="chi-cell"><span class="chi-key">χ₁</span><span class="chi1-val">—</span></span>
-            <span class="chi-cell"><span class="chi-key">χ₂</span><span class="chi2-val">—</span></span>
-            <span class="chi-cell"><span class="chi-key">χ₃</span><span class="chi3-val">—</span></span>
-            <span class="chi-cell"><span class="chi-key">χ₄</span><span class="chi4-val">—</span></span>
+            <span class="chi-cell"><span class="chi-key">χ₁</span><span class="chi1-val">-</span></span>
+            <span class="chi-cell"><span class="chi-key">χ₂</span><span class="chi2-val">-</span></span>
+            <span class="chi-cell"><span class="chi-key">χ₃</span><span class="chi3-val">-</span></span>
+            <span class="chi-cell"><span class="chi-key">χ₄</span><span class="chi4-val">-</span></span>
           </div>
           <p class="chi-hint">
             decoded side-chain torsions &middot; grid at ±60° / ±180°
@@ -167,12 +274,34 @@
 
   <section class="below-fold">
     <p class="footer-note">
-      1ENH (engrailed homeodomain, 54 aa) &middot; flow matching with
-      σ<sub>noise</sub> = 12 Å &middot; equivariant autoencoder, latent
-      dim 8.
+      Hero proteins: <strong>1QYS</strong> (a de novo designed
+      mini-protein), <strong>1ENH</strong> (engrailed homeodomain,
+      54 aa), <strong>1UBQ</strong> (ubiquitin, &beta;-grasp fold)
+      &middot; equivariant autoencoder, latent dim 8 &middot;
+      schedules: EDM-style diffusion vs. flow matching, &sigma;<sub>max</sub>
+      = 12 &Aring;.
+    </p>
+    <p class="footer-note">
+      Built for CSE 512 by Jasper Butcher &middot; 3D structures via
+      NGL Viewer, atlas + plots via D3.
     </p>
   </section>
 
   <script src="app.js?v=44"></script>
+  <script>
+    (() => {
+      const dlg = document.getElementById("report-dialog");
+      if (!dlg) return;
+      document
+        .querySelectorAll("[data-report-open]")
+        .forEach((b) => b.addEventListener("click", () => dlg.showModal()));
+      document
+        .querySelectorAll("[data-report-close]")
+        .forEach((b) => b.addEventListener("click", () => dlg.close()));
+      dlg.addEventListener("click", (e) => {
+        if (e.target === dlg) dlg.close();
+      });
+    })();
+  </script>
 </body>
 </html>

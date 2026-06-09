@@ -21,7 +21,7 @@
   --paper-dustyrose:  #C88497;
   --paper-terracotta: #D49580;
 
-  /* Highlight colour for "LATENT Z" — used on the bottleneck label, the
+  /* Highlight colour for "LATENT Z" - used on the bottleneck label, the
      italic z letter, the tensor cells, and the t-SNE panel title. Single
      accent so the two sections read as one concept by colour. Paper teal
      so it lines up with the all-atom sidechain colour next to it. */
@@ -44,7 +44,7 @@
 }
 
 /* Companion highlight for the BACKBONE label. paper_indigo is the
-   structural-feeling cool pair to paper_teal — the two encoder
+   structural-feeling cool pair to paper_teal - the two encoder
    outputs (backbone + latent z) now read as a teal/indigo duo across
    the page wherever those words appear. The rendered backbone cartoon
    in the AE NGL panels uses the same hex (see app.js compAll/compBb/
@@ -80,7 +80,7 @@ html, body {
   margin: 0 0 10px;
   color: var(--indigo);
   text-align: center;
-  /* Title can wrap at narrow viewports — `white-space: nowrap` would
+  /* Title can wrap at narrow viewports - `white-space: nowrap` would
      overflow the 760px container and push the centered text off-axis. */
 }
 
@@ -90,6 +90,81 @@ html, body {
   font-style: italic;
   text-align: center;
   margin: 0 0 28px;
+}
+
+/* "Read the report" pill button, sits under the subtitle. */
+.report-btn {
+  display: block;
+  margin: 8px auto 0;
+  padding: 9px 20px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: var(--indigo);
+  background: transparent;
+  border: 1.5px solid var(--indigo);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.report-btn:hover,
+.report-btn:focus-visible {
+  background: var(--indigo);
+  color: #fff;
+  outline: none;
+}
+
+/* Native <dialog> modal that holds the project writeup. */
+.report-dialog {
+  max-width: 680px;
+  width: calc(100vw - 48px);
+  border: none;
+  border-radius: 12px;
+  padding: 36px 40px 32px;
+  background: var(--bg);
+  color: var(--text);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18);
+  font-family: inherit;
+}
+.report-dialog::backdrop {
+  background: rgba(8, 65, 92, 0.32);
+  backdrop-filter: blur(2px);
+}
+.report-dialog h2 {
+  font-size: 24px;
+  letter-spacing: -0.01em;
+  color: var(--indigo);
+  margin: 0 0 18px;
+}
+.report-dialog p {
+  font-size: 15px;
+  line-height: 1.65;
+  margin: 0 0 14px;
+}
+.report-dialog p:last-child {
+  margin-bottom: 0;
+}
+.report-dialog-close {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  width: 32px;
+  height: 32px;
+  background: transparent;
+  border: none;
+  border-radius: 999px;
+  font-size: 22px;
+  line-height: 1;
+  color: var(--muted);
+  cursor: pointer;
+  padding: 0;
+}
+.report-dialog-close:hover,
+.report-dialog-close:focus-visible {
+  color: var(--text);
+  background: rgba(0, 0, 0, 0.05);
+  outline: none;
 }
 
 .subtitle {
@@ -178,7 +253,7 @@ html, body {
   height: min(420px, 56vh);
 }
 
-/* Explainer card on the left — switches text when the mode toggle flips. */
+/* Explainer card on the left - switches text when the mode toggle flips. */
 .mode-explainer {
   width: min(280px, 30vw);
   height: 100%;            /* fill the flow-three-col row exactly */
@@ -487,7 +562,14 @@ html, body {
 .latent-atlas-intro {
   max-width: 680px;
   margin: 80px auto 24px;
-  padding: 0 24px;
+  padding: 24px 24px;
+  /* The sticky-viz in .scrolly above paints over subsequent static
+     siblings (positioned elements outrank static in the same stacking
+     context). Lift this intro into its own stacking context and give it
+     a solid background so the schedule-card can't bleed through. */
+  position: relative;
+  z-index: 2;
+  background: var(--bg);
 }
 
 .latent-atlas-intro h2 {
@@ -570,7 +652,7 @@ html, body {
 
 .tsne-header h3 { margin: 0; }
 
-/* Make the "LATENT Z · T-SNE" title pop a little — the "LATENT Z"
+/* Make the "LATENT Z · T-SNE" title pop a little - the "LATENT Z"
    half carries the shared accent colour that ties the bottleneck and
    the latent atlas together, while the "T-SNE" half stays neutral. */
 .tsne-header h3 {
@@ -719,7 +801,7 @@ html, body {
   filter: drop-shadow(0 0 4px rgba(8, 65, 92, 0.45));
 }
 
-/* .tsne-hint removed — interaction model is discoverable. */
+/* .tsne-hint removed - interaction model is discoverable. */
 
 .residue-stage {
   width: 100%;
@@ -883,12 +965,12 @@ html, body {
   min-height: calc(100vh - 240px);
   display: flex;
   flex-direction: column;
-  /* Top-align the diagram so it reads a bit higher on the landing
-     fold instead of dead-center under the header. min-height still
-     keeps the noising scrolly section below the viewport. */
-  justify-content: flex-start;
+  /* Center the diagram architecture vertically in the landing fold;
+     the tagline + scroll-hint sit below it as captions. */
+  justify-content: center;
   align-items: center;
   padding-top: 32px;
+  padding-bottom: 32px;
 }
 
 /* The diagram itself constrains its width to the row; keep it from
@@ -913,6 +995,12 @@ html, body {
   text-align: center;
   max-width: 540px;
   margin: 0 auto 32px;
+}
+
+/* When the tagline sits below the diagram (so the architecture row
+   stays centered in the landing fold), flip the margins. */
+.ae-tagline.ae-tagline-below {
+  margin: 28px auto 0;
 }
 
 .ae-diagram {
@@ -985,7 +1073,7 @@ html, body {
   text-transform: uppercase;
 }
 
-/* Bottleneck group: the encoder emits TWO things — a fixed backbone
+/* Bottleneck group: the encoder emits TWO things - a fixed backbone
    frame AND an 8-D latent z per residue. Render them as two adjacent
    white cards stacked vertically inside a shared column, with a small
    "+" between to convey co-emission. Each card has its own chrome so
@@ -1231,7 +1319,7 @@ html, body {
 
 /* ---------- Backbone viewer (mirror of .latent-z-viewer) ----------
    Same absolute positioning under the AE row. The two viewers are
-   mutually exclusive in JS — opening one hides the other — so they
+   mutually exclusive in JS - opening one hides the other - so they
    can share the same anchor point without overlap. */
 .backbone-viewer {
   position: absolute;
@@ -1340,10 +1428,10 @@ html, body {
   text-align: center;
 }
 
-/* (Guide-line SVG removed — replaced by a shared accent colour on the
+/* (Guide-line SVG removed - replaced by a shared accent colour on the
    word "LATENT Z" in the bottleneck label and the t-SNE panel title.) */
 
-/* (legacy .ae-guide-arrows rules removed — replaced by body-level .z-guide) */
+/* (legacy .ae-guide-arrows rules removed - replaced by body-level .z-guide) */
 
 .ae-error {
   margin-top: 24px;
